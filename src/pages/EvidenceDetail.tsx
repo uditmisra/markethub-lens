@@ -6,11 +6,28 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Evidence } from "@/types/evidence";
 import { useParams, useNavigate } from "react-router-dom";
-import { Building2, Calendar, Mail, User, Briefcase, ArrowLeft, FileText, Target, Loader2 } from "lucide-react";
+import { useEvidence } from "@/hooks/useEvidence";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/hooks/useAuth";
+import { Building2, Calendar, Mail, User, Briefcase, ArrowLeft, FileText, Target, Loader2, Edit, Trash2, Archive } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const EvidenceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { canDelete, canEditAll } = useUserRole();
+  const { deleteEvidence, archiveEvidence } = useEvidence();
   
   const { data: evidence, isLoading } = useQuery({
     queryKey: ["evidence", id],
@@ -38,9 +55,24 @@ const EvidenceDetail = () => {
         status: data.status,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
-      } as Evidence;
+        createdBy: data.created_by,
+      } as Evidence & { createdBy: string };
     },
   });
+
+  const canEdit = canEditAll || (user && evidence?.createdBy === user.id);
+
+  const handleDelete = () => {
+    deleteEvidence(id!, {
+      onSuccess: () => {
+        navigate("/dashboard");
+      },
+    });
+  };
+
+  const handleArchive = () => {
+    archiveEvidence(id!);
+  };
 
   if (isLoading) {
     return (
@@ -220,15 +252,64 @@ const EvidenceDetail = () => {
             <Card className="p-6 bg-gradient-hero">
               <h3 className="text-lg font-semibold mb-3 text-primary-foreground">Actions</h3>
               <div className="space-y-2">
-                <Button variant="secondary" className="w-full">
-                  Edit Evidence
-                </Button>
-                <Button variant="secondary" className="w-full">
-                  Export
-                </Button>
-                <Button variant="secondary" className="w-full">
-                  Share
-                </Button>
+                {canEdit && (
+                  <Button 
+                    variant="secondary" 
+                    className="w-full"
+                    onClick={() => navigate(`/evidence/${id}/edit`)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Evidence
+                  </Button>
+                )}
+                
+                {evidence.status !== "archived" && canEdit && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="secondary" className="w-full">
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Archive Evidence</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to archive this evidence? It will no longer appear in active listings.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+
+                {canDelete && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="w-full">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Evidence</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete this evidence? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
             </Card>
           </div>
