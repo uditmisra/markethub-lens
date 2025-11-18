@@ -14,16 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      evidence: {
+        Row: {
+          company: string
+          content: string
+          created_at: string
+          created_by: string
+          customer_name: string
+          email: string
+          evidence_type: Database["public"]["Enums"]["evidence_type"]
+          id: string
+          job_title: string | null
+          product: Database["public"]["Enums"]["product_type"]
+          results: string | null
+          status: Database["public"]["Enums"]["evidence_status"]
+          title: string
+          updated_at: string
+          use_cases: string | null
+        }
+        Insert: {
+          company: string
+          content: string
+          created_at?: string
+          created_by: string
+          customer_name: string
+          email: string
+          evidence_type: Database["public"]["Enums"]["evidence_type"]
+          id?: string
+          job_title?: string | null
+          product: Database["public"]["Enums"]["product_type"]
+          results?: string | null
+          status?: Database["public"]["Enums"]["evidence_status"]
+          title: string
+          updated_at?: string
+          use_cases?: string | null
+        }
+        Update: {
+          company?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          customer_name?: string
+          email?: string
+          evidence_type?: Database["public"]["Enums"]["evidence_type"]
+          id?: string
+          job_title?: string | null
+          product?: Database["public"]["Enums"]["product_type"]
+          results?: string | null
+          status?: Database["public"]["Enums"]["evidence_status"]
+          title?: string
+          updated_at?: string
+          use_cases?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "reviewer" | "submitter"
+      evidence_status: "pending" | "approved" | "published" | "archived"
+      evidence_type: "testimonial" | "case-study" | "review" | "quote" | "video"
+      product_type: "platform" | "analytics" | "integration" | "api" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +257,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "reviewer", "submitter"],
+      evidence_status: ["pending", "approved", "published", "archived"],
+      evidence_type: ["testimonial", "case-study", "review", "quote", "video"],
+      product_type: ["platform", "analytics", "integration", "api", "other"],
+    },
   },
 } as const
