@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield } from "lucide-react";
 import { EvidenceType, EvidenceStatus, ProductType } from "@/types/evidence";
 
 const Dashboard = () => {
   const { evidence, isLoading } = useEvidence();
   const { signOut } = useAuth();
+  const { roles, isAdmin, isReviewer } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<EvidenceType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<EvidenceStatus | "all">("all");
@@ -73,7 +76,15 @@ const Dashboard = () => {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Evidence Dashboard</h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold text-foreground">Evidence Dashboard</h1>
+              {(isAdmin || isReviewer) && (
+                <Badge variant="outline" className="text-sm">
+                  <Shield className="h-3 w-3 mr-1" />
+                  {isAdmin ? "Admin" : "Reviewer"}
+                </Badge>
+              )}
+            </div>
             <p className="text-muted-foreground">Manage and organize all your customer evidence</p>
           </div>
           <div className="flex gap-2">

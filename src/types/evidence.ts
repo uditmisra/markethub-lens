@@ -17,4 +17,5 @@ export interface Evidence {
   status: EvidenceStatus;
   createdAt: string;
   updatedAt: string;
+  createdBy?: string;
 }

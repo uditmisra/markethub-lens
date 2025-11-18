@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Submit from "./pages/Submit";
 import Dashboard from "./pages/Dashboard";
 import EvidenceDetail from "./pages/EvidenceDetail";
+import EditEvidence from "./pages/EditEvidence";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/submit" element={<ProtectedRoute><Submit /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/evidence/:id" element={<ProtectedRoute><EvidenceDetail /></ProtectedRoute>} />
+          <Route path="/evidence/:id/edit" element={<ProtectedRoute><EditEvidence /></ProtectedRoute>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

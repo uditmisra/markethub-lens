@@ -33,6 +33,7 @@ export const useEvidence = () => {
         status: item.status,
         createdAt: item.created_at,
         updatedAt: item.updated_at,
+        createdBy: item.created_by,
       })) as Evidence[];
     },
   });
@@ -121,10 +122,62 @@ export const useEvidence = () => {
     },
   });
 
+  const deleteEvidence = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("evidence")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["evidence"] });
+      toast({
+        title: "Success!",
+        description: "Evidence deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const archiveEvidence = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("evidence")
+        .update({ status: "archived" })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["evidence"] });
+      toast({
+        title: "Success!",
+        description: "Evidence archived successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     evidence,
     isLoading,
     createEvidence: createEvidence.mutate,
     updateEvidence: updateEvidence.mutate,
+    deleteEvidence: deleteEvidence.mutate,
+    archiveEvidence: archiveEvidence.mutate,
   };
 };
