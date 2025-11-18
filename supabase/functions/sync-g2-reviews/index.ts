@@ -62,18 +62,23 @@ Deno.serve(async (req) => {
     }
 
     // Fetch reviews from G2 API
-    const g2Response = await fetch(
-      `https://data.g2.com/api/v1/products/${integration.product_id}/reviews?page=1&per_page=50`,
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const apiUrl = `https://data.g2.com/api/v1/products/${integration.product_id}/reviews?page=1&per_page=50`;
+    console.log(`Fetching from G2 API: ${apiUrl}`);
+    console.log(`Using API key: ${apiKey.substring(0, 8)}...`);
+    
+    const g2Response = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
+    console.log(`G2 API response status: ${g2Response.status} ${g2Response.statusText}`);
+    
     if (!g2Response.ok) {
-      throw new Error(`G2 API error: ${g2Response.statusText}`);
+      const errorBody = await g2Response.text();
+      console.error(`G2 API error response: ${errorBody}`);
+      throw new Error(`G2 API error (${g2Response.status}): ${g2Response.statusText}. Response: ${errorBody}`);
     }
 
     const reviewsData = await g2Response.json();
