@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Evidence } from "@/types/evidence";
-import { Building2, Calendar, FileText } from "lucide-react";
+import { Building2, Calendar, FileText, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface EvidenceCardProps {
@@ -29,17 +29,33 @@ export const EvidenceCard = ({ evidence }: EvidenceCardProps) => {
       <Card className="p-6 hover:shadow-medium transition-all cursor-pointer bg-gradient-card group">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Badge variant="outline" className="text-xs">
                 {typeLabels[evidence.evidenceType]}
               </Badge>
               <Badge variant="outline" className={`text-xs ${statusColors[evidence.status]}`}>
                 {evidence.status}
               </Badge>
+              {evidence.integration_source && (
+                <Badge variant="secondary" className="text-xs">
+                  {evidence.integration_source === 'g2' ? 'G2' : evidence.integration_source === 'capterra' ? 'Capterra' : 'Imported'}
+                </Badge>
+              )}
             </div>
             <h3 className="text-xl font-semibold text-card-foreground mb-2 group-hover:text-primary transition-colors">
               {evidence.title}
             </h3>
+            {evidence.external_url && (
+              <a 
+                href={evidence.external_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-xs text-primary hover:underline flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View original review <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
           </div>
           <FileText className="h-5 w-5 text-muted-foreground" />
         </div>

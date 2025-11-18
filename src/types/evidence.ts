@@ -19,4 +19,8 @@ export interface Evidence {
   updatedAt: string;
   createdBy?: string;
   fileUrl?: string;
+  integration_source?: string;
+  external_id?: string;
+  external_url?: string;
+  imported_at?: string;
 }

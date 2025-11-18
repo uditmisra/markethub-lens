@@ -23,8 +23,12 @@ export type Database = {
           customer_name: string
           email: string
           evidence_type: Database["public"]["Enums"]["evidence_type"]
+          external_id: string | null
+          external_url: string | null
           file_url: string | null
           id: string
+          imported_at: string | null
+          integration_source: string | null
           job_title: string | null
           product: Database["public"]["Enums"]["product_type"]
           results: string | null
@@ -41,8 +45,12 @@ export type Database = {
           customer_name: string
           email: string
           evidence_type: Database["public"]["Enums"]["evidence_type"]
+          external_id?: string | null
+          external_url?: string | null
           file_url?: string | null
           id?: string
+          imported_at?: string | null
+          integration_source?: string | null
           job_title?: string | null
           product: Database["public"]["Enums"]["product_type"]
           results?: string | null
@@ -59,8 +67,12 @@ export type Database = {
           customer_name?: string
           email?: string
           evidence_type?: Database["public"]["Enums"]["evidence_type"]
+          external_id?: string | null
+          external_url?: string | null
           file_url?: string | null
           id?: string
+          imported_at?: string | null
+          integration_source?: string | null
           job_title?: string | null
           product?: Database["public"]["Enums"]["product_type"]
           results?: string | null
@@ -68,6 +80,48 @@ export type Database = {
           title?: string
           updated_at?: string
           use_cases?: string | null
+        }
+        Relationships: []
+      }
+      integrations: {
+        Row: {
+          config: Json | null
+          created_at: string | null
+          id: string
+          integration_type: Database["public"]["Enums"]["integration_type"]
+          is_active: boolean | null
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_status: Database["public"]["Enums"]["sync_status"] | null
+          product_id: string
+          sync_frequency: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          integration_type: Database["public"]["Enums"]["integration_type"]
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: Database["public"]["Enums"]["sync_status"] | null
+          product_id: string
+          sync_frequency?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          integration_type?: Database["public"]["Enums"]["integration_type"]
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: Database["public"]["Enums"]["sync_status"] | null
+          product_id?: string
+          sync_frequency?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -133,7 +187,9 @@ export type Database = {
       app_role: "admin" | "reviewer" | "submitter"
       evidence_status: "pending" | "approved" | "published" | "archived"
       evidence_type: "testimonial" | "case-study" | "review" | "quote" | "video"
+      integration_type: "g2" | "capterra"
       product_type: "platform" | "analytics" | "integration" | "api" | "other"
+      sync_status: "pending" | "running" | "completed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -264,7 +320,9 @@ export const Constants = {
       app_role: ["admin", "reviewer", "submitter"],
       evidence_status: ["pending", "approved", "published", "archived"],
       evidence_type: ["testimonial", "case-study", "review", "quote", "video"],
+      integration_type: ["g2", "capterra"],
       product_type: ["platform", "analytics", "integration", "api", "other"],
+      sync_status: ["pending", "running", "completed", "failed"],
     },
   },
 } as const
