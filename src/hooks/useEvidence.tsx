@@ -34,6 +34,7 @@ export const useEvidence = () => {
         createdAt: item.created_at,
         updatedAt: item.updated_at,
         createdBy: item.created_by,
+        fileUrl: item.file_url,
       })) as Evidence[];
     },
   });
@@ -58,6 +59,7 @@ export const useEvidence = () => {
             results: newEvidence.results,
             use_cases: newEvidence.useCases,
             created_by: user.id,
+            file_url: newEvidence.fileUrl,
           },
         ])
         .select()
@@ -98,6 +100,7 @@ export const useEvidence = () => {
           results: updates.results,
           use_cases: updates.useCases,
           status: updates.status,
+          file_url: updates.fileUrl,
         })
         .eq("id", id)
         .select()

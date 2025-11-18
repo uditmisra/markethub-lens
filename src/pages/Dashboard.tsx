@@ -10,8 +10,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield, Download, Filter } from "lucide-react";
 import { EvidenceType, EvidenceStatus, ProductType } from "@/types/evidence";
+import { exportToCSV, exportToJSON } from "@/utils/exportData";
 
 const Dashboard = () => {
   const { evidence, isLoading } = useEvidence();
@@ -25,7 +26,11 @@ const Dashboard = () => {
   const filteredEvidence = evidence.filter(ev => {
     const matchesSearch = ev.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ev.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ev.content.toLowerCase().includes(searchTerm.toLowerCase());
+                         ev.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ev.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ev.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ev.results?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ev.useCases?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === "all" || ev.evidenceType === filterType;
     const matchesStatus = filterStatus === "all" || ev.status === filterStatus;
     const matchesProduct = filterProduct === "all" || ev.product === filterProduct;
@@ -118,19 +123,24 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Filters */}
-        <Card className="p-6 mb-8 shadow-soft">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Filters and Search */}
+        <Card className="p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold">Filters & Search</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search evidence..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-9"
               />
             </div>
-            
+
             <Select value={filterType} onValueChange={(value) => setFilterType(value as EvidenceType | "all")}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by type" />
@@ -172,31 +182,56 @@ const Dashboard = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <p className="text-sm text-muted-foreground">
+              Showing {filteredEvidence.length} of {evidence.length} evidence items
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => exportToCSV(filteredEvidence)}
+                disabled={filteredEvidence.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => exportToJSON(filteredEvidence)}
+                disabled={filteredEvidence.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export JSON
+              </Button>
+            </div>
+          </div>
         </Card>
 
         {/* Evidence Grid */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold text-foreground">
-              {filteredEvidence.length} {filteredEvidence.length === 1 ? 'Result' : 'Results'}
-            </h2>
-          </div>
-          
           {filteredEvidence.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredEvidence.map((evidence) => (
-                <EvidenceCard key={evidence.id} evidence={evidence} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredEvidence.map((item) => (
+                <EvidenceCard key={item.id} evidence={item} />
               ))}
             </div>
           ) : (
             <Card className="p-12 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2 text-card-foreground">No evidence found</h3>
-              <p className="text-muted-foreground mb-6">
-                Try adjusting your filters or add new customer evidence.
+              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <h3 className="text-lg font-semibold mb-2 text-foreground">No evidence found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm || filterType !== "all" || filterStatus !== "all" || filterProduct !== "all"
+                  ? "Try adjusting your filters or search term"
+                  : "Start by adding your first piece of customer evidence"}
               </p>
               <Button asChild>
-                <Link to="/submit">Add Evidence</Link>
+                <Link to="/submit">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Evidence
+                </Link>
               </Button>
             </Card>
           )}

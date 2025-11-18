@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileUpload } from "@/components/FileUpload";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState, useEffect } from "react";
@@ -34,6 +35,7 @@ const EditEvidence = () => {
     results: "",
     useCases: "",
     status: "" as EvidenceStatus,
+    fileUrl: "",
   });
 
   const { data: evidence, isLoading } = useQuery({
@@ -64,6 +66,7 @@ const EditEvidence = () => {
         results: evidence.results || "",
         useCases: evidence.use_cases || "",
         status: evidence.status,
+        fileUrl: evidence.file_url || "",
       });
     }
   }, [evidence]);
@@ -288,6 +291,12 @@ const EditEvidence = () => {
                   onChange={(e) => setFormData({ ...formData, useCases: e.target.value })}
                 />
               </div>
+
+              <FileUpload 
+                onFileUploaded={(url) => setFormData({ ...formData, fileUrl: url })}
+                currentFileUrl={formData.fileUrl}
+                onFileRemoved={() => setFormData({ ...formData, fileUrl: "" })}
+              />
 
               <div className="flex gap-4 pt-4">
                 <Button type="submit" size="lg" disabled={isSubmitting} className="flex-1">
