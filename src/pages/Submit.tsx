@@ -31,7 +31,7 @@ const Submit = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    createEvidence(formData, {
+    createEvidence.mutate(formData, {
       onSuccess: () => {
         navigate("/dashboard");
       },

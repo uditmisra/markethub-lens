@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export const Header = () => {
   const location = useLocation();
+  const { canApprove } = useUserRole();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -36,6 +38,14 @@ export const Header = () => {
           >
             <Link to="/dashboard">Dashboard</Link>
           </Button>
+          {canApprove && (
+            <Button
+              variant={isActive("/admin/review") ? "secondary" : "ghost"}
+              asChild
+            >
+              <Link to="/admin/review">Review</Link>
+            </Button>
+          )}
         </nav>
       </div>
     </header>

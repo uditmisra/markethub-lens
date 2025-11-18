@@ -63,7 +63,7 @@ const EvidenceDetail = () => {
   const canEdit = canEditAll || (user && evidence?.createdBy === user.id);
 
   const handleDelete = () => {
-    deleteEvidence(id!, {
+    deleteEvidence.mutate(id!, {
       onSuccess: () => {
         navigate("/dashboard");
       },
@@ -71,7 +71,7 @@ const EvidenceDetail = () => {
   };
 
   const handleArchive = () => {
-    archiveEvidence(id!);
+    archiveEvidence.mutate(id!);
   };
 
   if (isLoading) {
