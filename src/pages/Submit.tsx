@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FileUpload } from "@/components/FileUpload";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +26,7 @@ const Submit = () => {
     content: "",
     results: "",
     useCases: "",
+    fileUrl: "",
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -107,10 +109,10 @@ const Submit = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="evidenceType">Evidence Type *</Label>
-                  <Select 
-                    required
+                  <Select
                     value={formData.evidenceType}
                     onValueChange={(value) => setFormData({ ...formData, evidenceType: value as EvidenceType })}
+                    required
                   >
                     <SelectTrigger id="evidenceType">
                       <SelectValue placeholder="Select type" />
@@ -120,24 +122,24 @@ const Submit = () => {
                       <SelectItem value="case-study">Case Study</SelectItem>
                       <SelectItem value="review">Review</SelectItem>
                       <SelectItem value="quote">Quote</SelectItem>
-                      <SelectItem value="video">Video Testimonial</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="product">Product/Service *</Label>
-                  <Select 
-                    required
+                  <Select
                     value={formData.product}
                     onValueChange={(value) => setFormData({ ...formData, product: value as ProductType })}
+                    required
                   >
                     <SelectTrigger id="product">
                       <SelectValue placeholder="Select product" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="platform">Platform</SelectItem>
-                      <SelectItem value="analytics">Analytics Tool</SelectItem>
+                      <SelectItem value="analytics">Analytics</SelectItem>
                       <SelectItem value="integration">Integration</SelectItem>
                       <SelectItem value="api">API</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
@@ -170,10 +172,10 @@ const Submit = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="results">Key Results/Metrics</Label>
+                <Label htmlFor="results">Measurable Results (Optional)</Label>
                 <Textarea 
                   id="results" 
-                  placeholder="e.g., 45% increase in conversions, $100K saved annually, 3x faster deployment"
+                  placeholder="e.g., 45% increase in conversions, 2x revenue growth, 60% faster deployment..."
                   className="min-h-24"
                   value={formData.results}
                   onChange={(e) => setFormData({ ...formData, results: e.target.value })}
@@ -181,23 +183,25 @@ const Submit = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="useCases">Use Cases/Applications</Label>
-                <Input 
+                <Label htmlFor="useCases">Use Cases (Optional)</Label>
+                <Textarea 
                   id="useCases" 
-                  placeholder="e.g., Lead generation, Customer onboarding, Sales enablement"
+                  placeholder="Describe the specific use cases or scenarios..."
+                  className="min-h-24"
                   value={formData.useCases}
                   onChange={(e) => setFormData({ ...formData, useCases: e.target.value })}
                 />
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" size="lg" disabled={isSubmitting} className="flex-1">
-                  {isSubmitting ? "Submitting..." : "Submit Evidence"}
-                </Button>
-                <Button type="button" variant="outline" size="lg" onClick={() => navigate("/dashboard")}>
-                  Cancel
-                </Button>
-              </div>
+              <FileUpload 
+                onFileUploaded={(url) => setFormData({ ...formData, fileUrl: url })}
+                currentFileUrl={formData.fileUrl}
+                onFileRemoved={() => setFormData({ ...formData, fileUrl: "" })}
+              />
+
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit Evidence"}
+              </Button>
             </form>
           </Card>
         </div>

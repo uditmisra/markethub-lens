@@ -23,6 +23,7 @@ export type Database = {
           customer_name: string
           email: string
           evidence_type: Database["public"]["Enums"]["evidence_type"]
+          file_url: string | null
           id: string
           job_title: string | null
           product: Database["public"]["Enums"]["product_type"]
@@ -40,6 +41,7 @@ export type Database = {
           customer_name: string
           email: string
           evidence_type: Database["public"]["Enums"]["evidence_type"]
+          file_url?: string | null
           id?: string
           job_title?: string | null
           product: Database["public"]["Enums"]["product_type"]
@@ -57,6 +59,7 @@ export type Database = {
           customer_name?: string
           email?: string
           evidence_type?: Database["public"]["Enums"]["evidence_type"]
+          file_url?: string | null
           id?: string
           job_title?: string | null
           product?: Database["public"]["Enums"]["product_type"]

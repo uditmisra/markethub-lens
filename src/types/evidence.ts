@@ -18,4 +18,5 @@ export interface Evidence {
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
+  fileUrl?: string;
 }
