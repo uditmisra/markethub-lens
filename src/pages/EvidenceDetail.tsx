@@ -2,14 +2,56 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { mockEvidence } from "@/data/mockEvidence";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Evidence } from "@/types/evidence";
 import { useParams, useNavigate } from "react-router-dom";
-import { Building2, Calendar, Mail, User, Briefcase, ArrowLeft, FileText, Target } from "lucide-react";
+import { Building2, Calendar, Mail, User, Briefcase, ArrowLeft, FileText, Target, Loader2 } from "lucide-react";
 
 const EvidenceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const evidence = mockEvidence.find(e => e.id === id);
+  
+  const { data: evidence, isLoading } = useQuery({
+    queryKey: ["evidence", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("evidence")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) throw error;
+      
+      return {
+        id: data.id,
+        customerName: data.customer_name,
+        company: data.company,
+        email: data.email,
+        jobTitle: data.job_title,
+        evidenceType: data.evidence_type,
+        product: data.product,
+        title: data.title,
+        content: data.content,
+        results: data.results,
+        useCases: data.use_cases,
+        status: data.status,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      } as Evidence;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-12 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
 
   if (!evidence) {
     return (
