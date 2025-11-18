@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [filterType, setFilterType] = useState<EvidenceType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<EvidenceStatus | "all">("all");
   const [filterProduct, setFilterProduct] = useState<ProductType | "all">("all");
+  const [filterSource, setFilterSource] = useState<string>("all");
 
   const filteredEvidence = evidence.filter(ev => {
     const matchesSearch = ev.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -34,8 +35,11 @@ const Dashboard = () => {
     const matchesType = filterType === "all" || ev.evidenceType === filterType;
     const matchesStatus = filterStatus === "all" || ev.status === filterStatus;
     const matchesProduct = filterProduct === "all" || ev.product === filterProduct;
+    const matchesSource = filterSource === "all" || 
+                         (filterSource === "manual" && !ev.integration_source) ||
+                         ev.integration_source === filterSource;
     
-    return matchesSearch && matchesType && matchesStatus && matchesProduct;
+    return matchesSearch && matchesType && matchesStatus && matchesProduct && matchesSource;
   });
 
   const stats = [
@@ -179,6 +183,18 @@ const Dashboard = () => {
                 <SelectItem value="integration">Integration</SelectItem>
                 <SelectItem value="api">API</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterSource} onValueChange={setFilterSource}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by source" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="manual">Manual</SelectItem>
+                <SelectItem value="g2">G2</SelectItem>
+                <SelectItem value="capterra">Capterra</SelectItem>
               </SelectContent>
             </Select>
           </div>

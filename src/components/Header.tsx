@@ -5,7 +5,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 
 export const Header = () => {
   const location = useLocation();
-  const { canApprove } = useUserRole();
+  const { canApprove, isAdmin } = useUserRole();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -44,6 +44,14 @@ export const Header = () => {
               asChild
             >
               <Link to="/admin/review">Review</Link>
+            </Button>
+          )}
+          {isAdmin && (
+            <Button
+              variant={isActive("/integrations") ? "secondary" : "ghost"}
+              asChild
+            >
+              <Link to="/integrations">Integrations</Link>
             </Button>
           )}
         </nav>
