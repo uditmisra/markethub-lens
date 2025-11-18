@@ -5,29 +5,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { useEvidence } from "@/hooks/useEvidence";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { EvidenceType, ProductType } from "@/types/evidence";
 
 const Submit = () => {
-  const { toast } = useToast();
+  const { createEvidence } = useEvidence();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    customerName: "",
+    company: "",
+    email: "",
+    jobTitle: "",
+    evidenceType: "" as EvidenceType,
+    product: "" as ProductType,
+    title: "",
+    content: "",
+    results: "",
+    useCases: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    toast({
-      title: "Evidence Submitted Successfully!",
-      description: "Your customer evidence has been added to the dashboard.",
+    createEvidence(formData, {
+      onSuccess: () => {
+        navigate("/dashboard");
+      },
+      onSettled: () => {
+        setIsSubmitting(false);
+      },
     });
-
-    setIsSubmitting(false);
-    navigate("/dashboard");
   };
 
   return (
@@ -48,31 +59,59 @@ const Submit = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="customerName">Customer Name *</Label>
-                  <Input id="customerName" placeholder="John Doe" required />
+                  <Input 
+                    id="customerName" 
+                    placeholder="John Doe" 
+                    required 
+                    value={formData.customerName}
+                    onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="company">Company *</Label>
-                  <Input id="company" placeholder="Acme Inc." required />
+                  <Input 
+                    id="company" 
+                    placeholder="Acme Inc." 
+                    required 
+                    value={formData.company}
+                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  />
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email *</Label>
-                  <Input id="email" type="email" placeholder="john@acme.com" required />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="john@acme.com" 
+                    required 
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="jobTitle">Job Title</Label>
-                  <Input id="jobTitle" placeholder="Product Manager" />
+                  <Input 
+                    id="jobTitle" 
+                    placeholder="Product Manager" 
+                    value={formData.jobTitle}
+                    onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                  />
                 </div>
               </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="evidenceType">Evidence Type *</Label>
-                  <Select required>
+                  <Select 
+                    required
+                    value={formData.evidenceType}
+                    onValueChange={(value) => setFormData({ ...formData, evidenceType: value as EvidenceType })}
+                  >
                     <SelectTrigger id="evidenceType">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
@@ -88,7 +127,11 @@ const Submit = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="product">Product/Service *</Label>
-                  <Select required>
+                  <Select 
+                    required
+                    value={formData.product}
+                    onValueChange={(value) => setFormData({ ...formData, product: value as ProductType })}
+                  >
                     <SelectTrigger id="product">
                       <SelectValue placeholder="Select product" />
                     </SelectTrigger>
@@ -109,6 +152,8 @@ const Submit = () => {
                   id="title" 
                   placeholder="e.g., Increased conversion rate by 45%" 
                   required 
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 />
               </div>
 
@@ -119,6 +164,8 @@ const Submit = () => {
                   placeholder="Share the full customer testimonial, success story, or feedback..."
                   className="min-h-32"
                   required
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 />
               </div>
 
@@ -128,6 +175,8 @@ const Submit = () => {
                   id="results" 
                   placeholder="e.g., 45% increase in conversions, $100K saved annually, 3x faster deployment"
                   className="min-h-24"
+                  value={formData.results}
+                  onChange={(e) => setFormData({ ...formData, results: e.target.value })}
                 />
               </div>
 
@@ -136,6 +185,8 @@ const Submit = () => {
                 <Input 
                   id="useCases" 
                   placeholder="e.g., Lead generation, Customer onboarding, Sales enablement"
+                  value={formData.useCases}
+                  onChange={(e) => setFormData({ ...formData, useCases: e.target.value })}
                 />
               </div>
 

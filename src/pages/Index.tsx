@@ -55,7 +55,7 @@ const Index = () => {
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <Button size="lg" asChild className="shadow-medium">
-                <Link to="/submit">Submit Evidence</Link>
+                <Link to="/auth">Get Started</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link to="/dashboard">View Dashboard</Link>
@@ -95,7 +95,7 @@ const Index = () => {
             Join product marketing teams who are already leveraging customer success stories to drive growth.
           </p>
           <Button size="lg" variant="secondary" asChild className="shadow-large">
-            <Link to="/submit">Get Started Now</Link>
+            <Link to="/auth">Get Started Now</Link>
           </Button>
         </Card>
       </section>

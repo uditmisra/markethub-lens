@@ -4,25 +4,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { mockEvidence } from "@/data/mockEvidence";
+import { useEvidence } from "@/hooks/useEvidence";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, FileText, CheckCircle2, Clock, Archive } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut } from "lucide-react";
 import { EvidenceType, EvidenceStatus, ProductType } from "@/types/evidence";
 
 const Dashboard = () => {
+  const { evidence, isLoading } = useEvidence();
+  const { signOut } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<EvidenceType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<EvidenceStatus | "all">("all");
   const [filterProduct, setFilterProduct] = useState<ProductType | "all">("all");
 
-  const filteredEvidence = mockEvidence.filter(evidence => {
-    const matchesSearch = evidence.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         evidence.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         evidence.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === "all" || evidence.evidenceType === filterType;
-    const matchesStatus = filterStatus === "all" || evidence.status === filterStatus;
-    const matchesProduct = filterProduct === "all" || evidence.product === filterProduct;
+  const filteredEvidence = evidence.filter(ev => {
+    const matchesSearch = ev.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ev.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ev.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === "all" || ev.evidenceType === filterType;
+    const matchesStatus = filterStatus === "all" || ev.status === filterStatus;
+    const matchesProduct = filterProduct === "all" || ev.product === filterProduct;
     
     return matchesSearch && matchesType && matchesStatus && matchesProduct;
   });
@@ -30,29 +33,37 @@ const Dashboard = () => {
   const stats = [
     {
       label: "Total Evidence",
-      value: mockEvidence.length,
+      value: evidence.length,
       icon: FileText,
       color: "text-primary"
     },
     {
       label: "Published",
-      value: mockEvidence.filter(e => e.status === "published").length,
+      value: evidence.filter(e => e.status === "published").length,
       icon: CheckCircle2,
       color: "text-success"
     },
     {
       label: "Pending Review",
-      value: mockEvidence.filter(e => e.status === "pending").length,
+      value: evidence.filter(e => e.status === "pending").length,
       icon: Clock,
       color: "text-warning"
     },
     {
       label: "Archived",
-      value: mockEvidence.filter(e => e.status === "archived").length,
+      value: evidence.filter(e => e.status === "archived").length,
       icon: Archive,
       color: "text-muted-foreground"
     }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,12 +76,18 @@ const Dashboard = () => {
             <h1 className="text-4xl font-bold text-foreground mb-2">Evidence Dashboard</h1>
             <p className="text-muted-foreground">Manage and organize all your customer evidence</p>
           </div>
-          <Button asChild size="lg" className="shadow-medium">
-            <Link to="/submit">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Evidence
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild size="lg" className="shadow-medium">
+              <Link to="/submit">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Evidence
+              </Link>
+            </Button>
+            <Button onClick={signOut} variant="outline" size="lg">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
