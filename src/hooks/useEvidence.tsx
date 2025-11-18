@@ -175,9 +175,9 @@ export const useEvidence = () => {
   return {
     evidence,
     isLoading,
-    createEvidence: createEvidence.mutate,
-    updateEvidence: updateEvidence.mutate,
-    deleteEvidence: deleteEvidence.mutate,
-    archiveEvidence: archiveEvidence.mutate,
+    createEvidence,
+    updateEvidence,
+    deleteEvidence,
+    archiveEvidence,
   };
 };

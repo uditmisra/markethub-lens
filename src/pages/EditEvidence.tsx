@@ -72,7 +72,7 @@ const EditEvidence = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    updateEvidence(
+    updateEvidence.mutate(
       { id: id!, updates: formData },
       {
         onSuccess: () => {
