@@ -114,15 +114,17 @@ Deno.serve(async (req) => {
     
     console.log(`Starting G2 sync for product: ${productSlug} (UUID: ${productUuid})`);
 
-    // Fetch reviews from G2 API using UUID
-    const apiUrl = `https://data.g2.com/api/v2/products/${productUuid}/reviews?page=1&per_page=50`;
+    // Fetch reviews from G2 API using UUID with JSON:API pagination
+    const pageNumber = 1;
+    const pageSize = 50;
+    const apiUrl = `https://data.g2.com/api/v2/products/${productUuid}/reviews?page[number]=${pageNumber}&page[size]=${pageSize}`;
     console.log(`Fetching from G2 API: ${apiUrl}`);
     console.log(`Using API key: ${apiKey.substring(0, 8)}...`);
     
     const g2Response = await fetch(apiUrl, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.api+json',
       },
     });
 
@@ -135,7 +137,26 @@ Deno.serve(async (req) => {
     }
 
     const reviewsData = await g2Response.json();
-    const reviews: G2Review[] = reviewsData.reviews || [];
+    console.log(`G2 API raw response structure:`, JSON.stringify(reviewsData).substring(0, 500));
+    
+    // Parse JSON:API format response
+    const items = Array.isArray(reviewsData.data) ? reviewsData.data : [];
+    const reviews: G2Review[] = items.map((item: any) => {
+      const attrs = item.attributes || {};
+      
+      return {
+        id: item.id,
+        title: attrs.title || attrs.slug || 'G2 Review',
+        text: attrs.comment_answers?.value || attrs.answers?.overall_experience || '',
+        star_rating: attrs.star_rating || 0,
+        user: {
+          name: attrs.user_name || undefined,
+          company_name: attrs.user_current_company_name || undefined,
+        },
+        url: attrs.url || `https://www.g2.com/products/${productSlug}/reviews`,
+        created_at: attrs.submitted_at || attrs.created_at || new Date().toISOString(),
+      };
+    });
 
     console.log(`Fetched ${reviews.length} reviews from G2`);
 

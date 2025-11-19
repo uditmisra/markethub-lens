@@ -291,11 +291,11 @@ export default function Integrations() {
                         <span>{formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true })}</span>
                       </div>
                     )}
-                    {integration.last_sync_error && (
+                    {integration.last_sync_error && integration.last_sync_status === 'failed' && (
                       <Alert variant="destructive" className="mt-2">
                         <AlertCircle className="h-4 w-4" />
-                        <AlertDescription className="text-xs">
-                          {integration.last_sync_error}
+                        <AlertDescription className="text-xs break-words">
+                          <strong>Sync Failed:</strong> {integration.last_sync_error}
                         </AlertDescription>
                       </Alert>
                     )}
