@@ -162,6 +162,8 @@ Deno.serve(async (req) => {
 
     let importedCount = 0;
     let skippedCount = 0;
+    let failedCount = 0;
+    const errors: string[] = [];
 
     // Transform and import each review
     for (const review of reviews) {
@@ -195,36 +197,55 @@ Deno.serve(async (req) => {
             skippedCount++;
             console.log(`Skipped duplicate review: ${review.id}`);
           } else {
+            failedCount++;
+            const errorMsg = `Review ${review.id}: ${insertError.message || 'Unknown error'}`;
             console.error(`Error inserting review ${review.id}:`, insertError);
+            errors.push(errorMsg);
           }
         } else {
           importedCount++;
         }
       } catch (error) {
+        failedCount++;
+        const errorMsg = `Review ${review.id}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         console.error(`Error processing review ${review.id}:`, error);
+        errors.push(errorMsg);
       }
     }
 
-    // Update sync status to completed
+    console.log(`G2 sync completed: ${importedCount} imported, ${skippedCount} skipped, ${failedCount} failed`);
+
+    // Determine sync status based on results
+    const syncStatus = importedCount === 0 && reviews.length > 0 ? 'failed' : 'completed';
+    const syncError = syncStatus === 'failed' 
+      ? `Failed to import any reviews. ${failedCount} errors occurred: ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`
+      : (failedCount > 0 ? `Partial success: ${failedCount} reviews failed to import` : null);
+
+    // Update sync status
     await supabase
       .from('integrations')
       .update({
-        last_sync_status: 'completed',
+        last_sync_status: syncStatus,
         last_sync_at: new Date().toISOString(),
-        last_sync_error: null,
+        last_sync_error: syncError,
       })
       .eq('id', integrationId);
 
-    console.log(`G2 sync completed: ${importedCount} imported, ${skippedCount} skipped`);
-
     return new Response(
       JSON.stringify({
-        success: true,
+        success: syncStatus === 'completed',
+        message: syncStatus === 'completed' 
+          ? `Successfully imported ${importedCount} reviews, skipped ${skippedCount} duplicates${failedCount > 0 ? `, ${failedCount} failed` : ''}`
+          : `Sync failed: ${syncError}`,
         imported: importedCount,
         skipped: skippedCount,
+        failed: failedCount,
         total: reviews.length,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: syncStatus === 'completed' ? 200 : 500,
+      }
     );
   } catch (error) {
     console.error('Error in sync-g2-reviews:', error);

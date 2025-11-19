@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, RefreshCw, Trash2, ExternalLink, AlertCircle } from "lucide-react";
+import { Plus, RefreshCw, Trash2, ExternalLink, AlertCircle, Clock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDistanceToNow } from "date-fns";
 
@@ -286,11 +286,22 @@ export default function Integrations() {
                       {getSyncStatusBadge(integration.last_sync_status)}
                     </div>
                     {integration.last_sync_at && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Last Sync:</span>
+                      <div className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        <span>Last synced</span>
                         <span>{formatDistanceToNow(new Date(integration.last_sync_at), { addSuffix: true })}</span>
                       </div>
                     )}
+                    
+                    {integration.last_sync_status === 'running' && (
+                      <Alert className="mt-2 border-blue-500/20 bg-blue-500/5">
+                        <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
+                        <AlertDescription className="text-xs">
+                          <strong>Sync in progress...</strong> Please wait while we fetch and import reviews.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
                     {integration.last_sync_error && integration.last_sync_status === 'failed' && (
                       <Alert variant="destructive" className="mt-2">
                         <AlertCircle className="h-4 w-4" />

@@ -19,7 +19,7 @@ export type Database = {
           company: string
           content: string
           created_at: string
-          created_by: string
+          created_by: string | null
           customer_name: string
           email: string
           evidence_type: Database["public"]["Enums"]["evidence_type"]
@@ -41,7 +41,7 @@ export type Database = {
           company: string
           content: string
           created_at?: string
-          created_by: string
+          created_by?: string | null
           customer_name: string
           email: string
           evidence_type: Database["public"]["Enums"]["evidence_type"]
@@ -63,7 +63,7 @@ export type Database = {
           company?: string
           content?: string
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           customer_name?: string
           email?: string
           evidence_type?: Database["public"]["Enums"]["evidence_type"]
