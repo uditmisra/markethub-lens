@@ -237,18 +237,40 @@ const Dashboard = () => {
           ) : (
             <Card className="p-12 text-center">
               <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <h3 className="text-lg font-semibold mb-2 text-foreground">No evidence found</h3>
+              <h3 className="text-lg font-semibold mb-2 text-foreground">
+                {evidence.length === 0 ? 'No evidence yet' : 'No evidence found'}
+              </h3>
               <p className="text-muted-foreground mb-4">
-                {searchTerm || filterType !== "all" || filterStatus !== "all" || filterProduct !== "all"
+                {evidence.length === 0 
+                  ? 'Get started by submitting evidence manually or setting up a review site integration.'
+                  : searchTerm || filterType !== "all" || filterStatus !== "all" || filterProduct !== "all"
                   ? "Try adjusting your filters or search term"
                   : "Start by adding your first piece of customer evidence"}
               </p>
-              <Button asChild>
-                <Link to="/submit">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Evidence
-                </Link>
-              </Button>
+              {evidence.length === 0 ? (
+                <div className="flex gap-3 justify-center">
+                  <Button asChild>
+                    <Link to="/submit">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Submit Evidence
+                    </Link>
+                  </Button>
+                  {isAdmin && (
+                    <Button variant="outline" asChild>
+                      <Link to="/integrations">
+                        Set Up Integration
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <Button asChild>
+                  <Link to="/submit">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Evidence
+                  </Link>
+                </Button>
+              )}
             </Card>
           )}
         </div>
