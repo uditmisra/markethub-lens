@@ -23,4 +23,9 @@ export interface Evidence {
   external_id?: string;
   external_url?: string;
   imported_at?: string;
+  company_size?: string;
+  industry?: string;
+  rating?: number;
+  review_date?: string;
+  reviewer_avatar?: string;
 }

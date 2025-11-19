@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Evidence } from "@/types/evidence";
+import { Evidence, EvidenceStatus } from "@/types/evidence";
 import { useToast } from "@/hooks/use-toast";
 
 export const useEvidence = () => {
@@ -35,6 +35,15 @@ export const useEvidence = () => {
         updatedAt: item.updated_at,
         createdBy: item.created_by,
         fileUrl: item.file_url,
+        integration_source: item.integration_source,
+        external_id: item.external_id,
+        external_url: item.external_url,
+        imported_at: item.imported_at,
+        company_size: item.company_size,
+        industry: item.industry,
+        rating: item.rating,
+        review_date: item.review_date,
+        reviewer_avatar: item.reviewer_avatar,
       })) as Evidence[];
     },
   });
@@ -175,6 +184,58 @@ export const useEvidence = () => {
     },
   });
 
+  const bulkUpdateEvidence = useMutation({
+    mutationFn: async ({ ids, status }: { ids: string[]; status: EvidenceStatus }) => {
+      const { error } = await supabase
+        .from("evidence")
+        .update({ status })
+        .in("id", ids);
+
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["evidence"] });
+      toast({
+        title: "Success!",
+        description: `${count} items updated successfully.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkDeleteEvidence = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase
+        .from("evidence")
+        .delete()
+        .in("id", ids);
+
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ["evidence"] });
+      toast({
+        title: "Success!",
+        description: `${count} items deleted successfully.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     evidence,
     isLoading,
@@ -182,5 +243,7 @@ export const useEvidence = () => {
     updateEvidence,
     deleteEvidence,
     archiveEvidence,
+    bulkUpdateEvidence,
+    bulkDeleteEvidence,
   };
 };

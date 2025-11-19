@@ -17,6 +17,7 @@ export type Database = {
       evidence: {
         Row: {
           company: string
+          company_size: string | null
           content: string
           created_at: string
           created_by: string | null
@@ -28,10 +29,14 @@ export type Database = {
           file_url: string | null
           id: string
           imported_at: string | null
+          industry: string | null
           integration_source: string | null
           job_title: string | null
           product: Database["public"]["Enums"]["product_type"]
+          rating: number | null
           results: string | null
+          review_date: string | null
+          reviewer_avatar: string | null
           status: Database["public"]["Enums"]["evidence_status"]
           title: string
           updated_at: string
@@ -39,6 +44,7 @@ export type Database = {
         }
         Insert: {
           company: string
+          company_size?: string | null
           content: string
           created_at?: string
           created_by?: string | null
@@ -50,10 +56,14 @@ export type Database = {
           file_url?: string | null
           id?: string
           imported_at?: string | null
+          industry?: string | null
           integration_source?: string | null
           job_title?: string | null
           product: Database["public"]["Enums"]["product_type"]
+          rating?: number | null
           results?: string | null
+          review_date?: string | null
+          reviewer_avatar?: string | null
           status?: Database["public"]["Enums"]["evidence_status"]
           title: string
           updated_at?: string
@@ -61,6 +71,7 @@ export type Database = {
         }
         Update: {
           company?: string
+          company_size?: string | null
           content?: string
           created_at?: string
           created_by?: string | null
@@ -72,10 +83,14 @@ export type Database = {
           file_url?: string | null
           id?: string
           imported_at?: string | null
+          industry?: string | null
           integration_source?: string | null
           job_title?: string | null
           product?: Database["public"]["Enums"]["product_type"]
+          rating?: number | null
           results?: string | null
+          review_date?: string | null
+          reviewer_avatar?: string | null
           status?: Database["public"]["Enums"]["evidence_status"]
           title?: string
           updated_at?: string
