@@ -154,18 +154,52 @@ Deno.serve(async (req) => {
     const items = Array.isArray(reviewsData.data) ? reviewsData.data : [];
     const reviews: G2Review[] = items.map((item: any) => {
       const attrs = item.attributes || {};
+      const answers = attrs.answers || {};
+      
+      // Extract all answer values and combine them into rich content
+      const answerParts = [];
+      if (answers.love?.value) {
+        answerParts.push(`**What do you like best about the product?**\n${answers.love.value}`);
+      }
+      if (answers.hate?.value) {
+        answerParts.push(`**What do you dislike about the product?**\n${answers.hate.value}`);
+      }
+      if (answers.problems_solving?.value) {
+        answerParts.push(`**What problems is the product solving?**\n${answers.problems_solving.value}`);
+      }
+      if (answers.recommendations_to_others?.value) {
+        answerParts.push(`**Recommendations to others:**\n${answers.recommendations_to_others.value}`);
+      }
+      if (answers.best_use_case?.value) {
+        answerParts.push(`**Best use cases:**\n${answers.best_use_case.value}`);
+      }
+      
+      const fullText = answerParts.length > 0 
+        ? answerParts.join('\n\n') 
+        : attrs.comment_answers?.value || attrs.comment_text || '';
       
       return {
         id: item.id,
-        title: attrs.title || attrs.slug || 'G2 Review',
-        text: attrs.comment_answers?.value || attrs.answers?.overall_experience || '',
+        title: attrs.title || (fullText ? fullText.substring(0, 100) + '...' : 'G2 Review'),
+        text: fullText,
         star_rating: attrs.star_rating || 0,
         user: {
           name: attrs.user_name || undefined,
           company_name: attrs.user_current_company_name || undefined,
+          job_title: attrs.user_current_position || attrs.user_job_title || undefined,
         },
-        url: attrs.url || `https://www.g2.com/products/${productSlug}/reviews`,
+        url: attrs.url || `https://www.g2.com/products/${productSlug}/reviews/${item.id}`,
         created_at: attrs.submitted_at || attrs.created_at || new Date().toISOString(),
+        company_size: attrs.company_size_text || attrs.user_company_size || undefined,
+        industry: attrs.user_industry || attrs.company_industry || undefined,
+        reviewer_avatar: attrs.user_profile_image_url || attrs.user_avatar_url || undefined,
+        answers: {
+          love: answers.love?.value,
+          hate: answers.hate?.value,
+          problems_solving: answers.problems_solving?.value,
+          recommendations: answers.recommendations_to_others?.value,
+          best_use_case: answers.best_use_case?.value,
+        },
       };
     });
 
