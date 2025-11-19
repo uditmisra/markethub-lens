@@ -100,6 +100,13 @@ export default function Integrations() {
     setIsDialogOpen(true);
   };
 
+  const handleResetSyncStatus = async (integration: Integration) => {
+    await updateIntegration.mutateAsync({
+      id: integration.id,
+      last_sync_status: "pending",
+    } as any);
+  };
+
   const getSyncStatusBadge = (status?: string) => {
     switch (status) {
       case "completed":
@@ -298,6 +305,15 @@ export default function Integrations() {
                       <RefreshCw className="h-4 w-4 mr-2" />
                       Sync Now
                     </Button>
+                    {integration.last_sync_status === "running" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleResetSyncStatus(integration)}
+                      >
+                        Reset
+                      </Button>
+                    )}
                     <Button
                       size="sm"
                       variant="outline"
