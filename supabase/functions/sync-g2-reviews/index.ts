@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     console.log(`Starting G2 sync for product ID: ${integration.product_id}`);
 
     // Fetch reviews from G2 API
-    const apiUrl = `https://data.g2.com/api/v1/products/${integration.product_id}/reviews?page=1&per_page=50`;
+    const apiUrl = `https://data.g2.com/api/v2/products/${integration.product_id}/reviews?page=1&per_page=50`;
     console.log(`Fetching from G2 API: ${apiUrl}`);
     console.log(`Using API key: ${apiKey.substring(0, 8)}...`);
     
