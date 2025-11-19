@@ -17,6 +17,7 @@ import { EvidenceType, EvidenceStatus, ProductType } from "@/types/evidence";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { calculateCompleteness } from "@/utils/calculateCompleteness";
 
 const Dashboard = () => {
   const { evidence, isLoading } = useEvidence();
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [filterCompleteness, setFilterCompleteness] = useState<string>("all");
 
   // Extract unique company sizes and industries from evidence
   const uniqueCompanySizes = Array.from(new Set(evidence.map(e => e.company_size).filter(Boolean)));
@@ -63,8 +65,16 @@ const Dashboard = () => {
     const matchesDateFrom = !dateFrom || reviewDate >= dateFrom;
     const matchesDateTo = !dateTo || reviewDate <= dateTo;
     
+    const completeness = calculateCompleteness(ev);
+    const matchesCompleteness = filterCompleteness === "all" ||
+                               (filterCompleteness === "excellent" && completeness.score >= 90) ||
+                               (filterCompleteness === "good" && completeness.score >= 70 && completeness.score < 90) ||
+                               (filterCompleteness === "fair" && completeness.score >= 50 && completeness.score < 70) ||
+                               (filterCompleteness === "incomplete" && completeness.score < 50);
+    
     return matchesSearch && matchesType && matchesStatus && matchesProduct && matchesSource && 
-           matchesRating && matchesCompanySize && matchesIndustry && matchesDateFrom && matchesDateTo;
+           matchesRating && matchesCompanySize && matchesIndustry && matchesDateFrom && matchesDateTo &&
+           matchesCompleteness;
   });
 
   const clearAllFilters = () => {
@@ -78,11 +88,13 @@ const Dashboard = () => {
     setFilterIndustry("all");
     setDateFrom(undefined);
     setDateTo(undefined);
+    setFilterCompleteness("all");
   };
 
   const hasActiveFilters = searchTerm || filterType !== "all" || filterStatus !== "all" || 
                           filterProduct !== "all" || filterSource !== "all" || filterRating !== "all" || 
-                          filterCompanySize !== "all" || filterIndustry !== "all" || dateFrom || dateTo;
+                          filterCompanySize !== "all" || filterIndustry !== "all" || dateFrom || dateTo ||
+                          filterCompleteness !== "all";
 
   const stats = [
     {
@@ -266,7 +278,7 @@ const Dashboard = () => {
 
           {/* Advanced Filters */}
           {showAdvancedFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
               <Select value={filterRating} onValueChange={setFilterRating}>
                 <SelectTrigger>
                   <SelectValue placeholder="Rating" />
@@ -300,6 +312,19 @@ const Dashboard = () => {
                   {uniqueIndustries.map(industry => (
                     <SelectItem key={industry} value={industry!}>{industry}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterCompleteness} onValueChange={setFilterCompleteness}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Quality Score" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Quality</SelectItem>
+                  <SelectItem value="excellent">Excellent (90%+)</SelectItem>
+                  <SelectItem value="good">Good (70-89%)</SelectItem>
+                  <SelectItem value="fair">Fair (50-69%)</SelectItem>
+                  <SelectItem value="incomplete">Incomplete (&lt;50%)</SelectItem>
                 </SelectContent>
               </Select>
 

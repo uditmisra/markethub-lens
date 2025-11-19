@@ -1,9 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Evidence } from "@/types/evidence";
-import { Building2, Calendar, FileText, ExternalLink, Star, Users, Briefcase } from "lucide-react";
+import { Building2, Calendar, FileText, ExternalLink, Star, Users, Briefcase, Info } from "lucide-react";
 import { Link } from "react-router-dom";
+import { calculateCompleteness, getCompletenessLabel, getCompletenessColor } from "@/utils/calculateCompleteness";
 
 interface EvidenceCardProps {
   evidence: Evidence;
@@ -25,6 +28,9 @@ const typeLabels = {
 };
 
 export const EvidenceCard = ({ evidence }: EvidenceCardProps) => {
+  const completeness = calculateCompleteness(evidence);
+  const completenessInfo = getCompletenessLabel(completeness.score);
+
   const renderStarRating = (rating?: number) => {
     if (!rating) return null;
     return (
@@ -46,8 +52,47 @@ export const EvidenceCard = ({ evidence }: EvidenceCardProps) => {
 
   return (
     <Link to={`/evidence/${evidence.id}`}>
-      <Card className="p-6 hover:shadow-medium transition-all cursor-pointer bg-gradient-card group">
-        <div className="flex items-start justify-between mb-4">
+      <Card className="p-6 hover:shadow-medium transition-all cursor-pointer bg-gradient-card group relative">
+        {/* Completeness Badge */}
+        <div className="absolute top-4 right-4">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2 bg-background/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-border">
+                  <div className="flex items-center gap-1.5">
+                    <div className={`h-2 w-2 rounded-full ${getCompletenessColor(completeness.score)}`} />
+                    <span className="text-xs font-medium">{completeness.score}%</span>
+                  </div>
+                  <Info className="h-3 w-3 text-muted-foreground" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-xs">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Data Completeness</span>
+                    <span className={`text-sm font-semibold ${completenessInfo.color}`}>
+                      {completenessInfo.label}
+                    </span>
+                  </div>
+                  <Progress value={completeness.score} className="h-2" />
+                  <div className="text-xs text-muted-foreground">
+                    {completeness.filledFields} of {completeness.totalFields} fields completed
+                  </div>
+                  {completeness.missingFields.length > 0 && (
+                    <div className="text-xs">
+                      <div className="font-medium mb-1">Missing:</div>
+                      <div className="text-muted-foreground">
+                        {completeness.missingFields.join(", ")}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <div className="flex items-start justify-between mb-4 pr-20">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Badge variant="outline" className="text-xs">
@@ -58,7 +103,7 @@ export const EvidenceCard = ({ evidence }: EvidenceCardProps) => {
               </Badge>
               {evidence.integration_source && (
                 <Badge variant="secondary" className="text-xs">
-                  {evidence.integration_source === 'g2' ? 'G2' : evidence.integration_source === 'capterra' ? 'Capterra' : 'Imported'}
+                  {evidence.integration_source === "g2" ? "G2" : evidence.integration_source === "capterra" ? "Capterra" : "Imported"}
                 </Badge>
               )}
               {evidence.company_size && (
