@@ -27,6 +27,16 @@ const Dashboard = () => {
   const [filterStatus, setFilterStatus] = useState<EvidenceStatus | "all">("all");
   const [filterProduct, setFilterProduct] = useState<ProductType | "all">("all");
   const [filterSource, setFilterSource] = useState<string>("all");
+  const [filterRating, setFilterRating] = useState<string>("all");
+  const [filterCompanySize, setFilterCompanySize] = useState<string>("all");
+  const [filterIndustry, setFilterIndustry] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Extract unique company sizes and industries from evidence
+  const uniqueCompanySizes = Array.from(new Set(evidence.map(e => e.company_size).filter(Boolean)));
+  const uniqueIndustries = Array.from(new Set(evidence.map(e => e.industry).filter(Boolean)));
 
   const filteredEvidence = evidence.filter(ev => {
     const matchesSearch = ev.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -42,9 +52,37 @@ const Dashboard = () => {
     const matchesSource = filterSource === "all" || 
                          (filterSource === "manual" && !ev.integration_source) ||
                          ev.integration_source === filterSource;
+    const matchesRating = filterRating === "all" || 
+                         (filterRating === "5" && ev.rating === 5) ||
+                         (filterRating === "4+" && ev.rating && ev.rating >= 4) ||
+                         (filterRating === "3+" && ev.rating && ev.rating >= 3);
+    const matchesCompanySize = filterCompanySize === "all" || ev.company_size === filterCompanySize;
+    const matchesIndustry = filterIndustry === "all" || ev.industry === filterIndustry;
     
-    return matchesSearch && matchesType && matchesStatus && matchesProduct && matchesSource;
+    const reviewDate = new Date(ev.review_date || ev.createdAt);
+    const matchesDateFrom = !dateFrom || reviewDate >= dateFrom;
+    const matchesDateTo = !dateTo || reviewDate <= dateTo;
+    
+    return matchesSearch && matchesType && matchesStatus && matchesProduct && matchesSource && 
+           matchesRating && matchesCompanySize && matchesIndustry && matchesDateFrom && matchesDateTo;
   });
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setFilterType("all");
+    setFilterStatus("all");
+    setFilterProduct("all");
+    setFilterSource("all");
+    setFilterRating("all");
+    setFilterCompanySize("all");
+    setFilterIndustry("all");
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
+
+  const hasActiveFilters = searchTerm || filterType !== "all" || filterStatus !== "all" || 
+                          filterProduct !== "all" || filterSource !== "all" || filterRating !== "all" || 
+                          filterCompanySize !== "all" || filterIndustry !== "all" || dateFrom || dateTo;
 
   const stats = [
     {
@@ -133,12 +171,35 @@ const Dashboard = () => {
 
         {/* Filters and Search */}
         <Card className="p-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Filters & Search</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Filters & Search</h2>
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="ml-2">
+                  {filteredEvidence.length} results
+                </Badge>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearAllFilters}>
+                  <X className="h-4 w-4 mr-2" />
+                  Clear All
+                </Button>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              >
+                {showAdvancedFilters ? "Hide" : "Show"} Advanced
+              </Button>
+            </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          {/* Basic Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -151,7 +212,7 @@ const Dashboard = () => {
 
             <Select value={filterType} onValueChange={(value) => setFilterType(value as EvidenceType | "all")}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by type" />
+                <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
@@ -165,7 +226,7 @@ const Dashboard = () => {
 
             <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as EvidenceStatus | "all")}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
@@ -178,7 +239,7 @@ const Dashboard = () => {
 
             <Select value={filterProduct} onValueChange={(value) => setFilterProduct(value as ProductType | "all")}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by product" />
+                <SelectValue placeholder="Product" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Products</SelectItem>
@@ -192,7 +253,7 @@ const Dashboard = () => {
 
             <Select value={filterSource} onValueChange={setFilterSource}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by source" />
+                <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Sources</SelectItem>
@@ -202,6 +263,97 @@ const Dashboard = () => {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
+              <Select value={filterRating} onValueChange={setFilterRating}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Rating" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ratings</SelectItem>
+                  <SelectItem value="5">⭐⭐⭐⭐⭐ (5 stars)</SelectItem>
+                  <SelectItem value="4+">⭐⭐⭐⭐ (4+ stars)</SelectItem>
+                  <SelectItem value="3+">⭐⭐⭐ (3+ stars)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterCompanySize} onValueChange={setFilterCompanySize}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Company Size" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sizes</SelectItem>
+                  {uniqueCompanySizes.map(size => (
+                    <SelectItem key={size} value={size!}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterIndustry} onValueChange={setFilterIndustry}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Industries</SelectItem>
+                  {uniqueIndustries.map(industry => (
+                    <SelectItem key={industry} value={industry!}>{industry}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "flex-1 justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "MMM dd") : "From date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "flex-1 justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "MMM dd") : "To date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-4 border-t">
             <p className="text-sm text-muted-foreground">
