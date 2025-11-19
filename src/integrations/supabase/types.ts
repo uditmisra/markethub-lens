@@ -92,7 +92,11 @@ export type Database = {
           is_active: boolean | null
           last_sync_at: string | null
           last_sync_error: string | null
+          last_sync_failed: number | null
+          last_sync_imported: number | null
+          last_sync_skipped: number | null
           last_sync_status: Database["public"]["Enums"]["sync_status"] | null
+          last_sync_total: number | null
           product_id: string
           sync_frequency: string | null
           updated_at: string | null
@@ -105,7 +109,11 @@ export type Database = {
           is_active?: boolean | null
           last_sync_at?: string | null
           last_sync_error?: string | null
+          last_sync_failed?: number | null
+          last_sync_imported?: number | null
+          last_sync_skipped?: number | null
           last_sync_status?: Database["public"]["Enums"]["sync_status"] | null
+          last_sync_total?: number | null
           product_id: string
           sync_frequency?: string | null
           updated_at?: string | null
@@ -118,7 +126,11 @@ export type Database = {
           is_active?: boolean | null
           last_sync_at?: string | null
           last_sync_error?: string | null
+          last_sync_failed?: number | null
+          last_sync_imported?: number | null
+          last_sync_skipped?: number | null
           last_sync_status?: Database["public"]["Enums"]["sync_status"] | null
+          last_sync_total?: number | null
           product_id?: string
           sync_frequency?: string | null
           updated_at?: string | null

@@ -21,6 +21,10 @@ export interface Integration {
   last_sync_at?: string;
   last_sync_status?: SyncStatus;
   last_sync_error?: string;
+  last_sync_total?: number;
+  last_sync_imported?: number;
+  last_sync_skipped?: number;
+  last_sync_failed?: number;
   created_at: string;
   updated_at: string;
 }

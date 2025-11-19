@@ -293,6 +293,32 @@ export default function Integrations() {
                       </div>
                     )}
                     
+                    {integration.last_sync_total !== undefined && integration.last_sync_total !== null && (
+                      <div className="text-xs pt-2 border-t">
+                        {integration.last_sync_total === 0 ? (
+                          <div className="text-warning font-medium">
+                            ⚠️ {integration.integration_type === 'g2' ? 'G2' : 'Capterra'} returned 0 reviews for this product
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="font-medium text-foreground">Last sync results:</div>
+                            <div className="flex flex-wrap gap-2">
+                              <span className="text-muted-foreground">Fetched: <span className="font-medium text-foreground">{integration.last_sync_total}</span></span>
+                              {integration.last_sync_imported !== undefined && (
+                                <span className="text-muted-foreground">Imported: <span className="font-medium text-success">{integration.last_sync_imported}</span></span>
+                              )}
+                              {integration.last_sync_skipped !== undefined && integration.last_sync_skipped > 0 && (
+                                <span className="text-muted-foreground">Skipped: <span className="font-medium text-muted-foreground">{integration.last_sync_skipped}</span></span>
+                              )}
+                              {integration.last_sync_failed !== undefined && integration.last_sync_failed > 0 && (
+                                <span className="text-muted-foreground">Failed: <span className="font-medium text-destructive">{integration.last_sync_failed}</span></span>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
                     {integration.last_sync_status === 'running' && (
                       <Alert className="mt-2 border-blue-500/20 bg-blue-500/5">
                         <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />

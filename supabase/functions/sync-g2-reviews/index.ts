@@ -221,13 +221,17 @@ Deno.serve(async (req) => {
       ? `Failed to import any reviews. ${failedCount} errors occurred: ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`
       : (failedCount > 0 ? `Partial success: ${failedCount} reviews failed to import` : null);
 
-    // Update sync status
+    // Update sync status with detailed metrics
     await supabase
       .from('integrations')
       .update({
         last_sync_status: syncStatus,
         last_sync_at: new Date().toISOString(),
         last_sync_error: syncError,
+        last_sync_total: reviews.length,
+        last_sync_imported: importedCount,
+        last_sync_skipped: skippedCount,
+        last_sync_failed: failedCount,
       })
       .eq('id', integrationId);
 
