@@ -26,7 +26,7 @@ const PublicEvidenceDetail = () => {
         .single();
 
       if (error) throw error;
-      return data as Evidence;
+      return data as any;
     },
   });
 
@@ -44,7 +44,7 @@ const PublicEvidenceDetail = () => {
         .limit(3);
 
       if (error) throw error;
-      return data as Evidence[];
+      return data as any[];
     },
     enabled: !!evidence,
   });
@@ -121,19 +121,19 @@ const PublicEvidenceDetail = () => {
                 <CardHeader>
                   <div className="flex items-start gap-4 mb-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={evidence.reviewer_avatar} />
+                      <AvatarImage src={(evidence as any).reviewer_avatar} />
                       <AvatarFallback className="text-lg">
-                        {evidence.customer_name.charAt(0)}
+                        {(evidence as any).customer_name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <h1 className="text-2xl font-bold text-foreground mb-2">
-                        {evidence.customer_name}
+                        {(evidence as any).customer_name}
                       </h1>
-                      {evidence.job_title && (
+                      {(evidence as any).job_title && (
                         <div className="flex items-center gap-2 text-muted-foreground mb-1">
                           <Briefcase className="h-4 w-4" />
-                          <span>{evidence.job_title}</span>
+                          <span>{(evidence as any).job_title}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-muted-foreground">
@@ -153,10 +153,10 @@ const PublicEvidenceDetail = () => {
                   <CardTitle className="text-xl mb-4">{evidence.title}</CardTitle>
 
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{getTypeLabel(evidence.evidence_type)}</Badge>
+                    <Badge variant="secondary">{getTypeLabel((evidence as any).evidence_type)}</Badge>
                     <Badge variant="outline" className="capitalize">{evidence.product}</Badge>
-                    {evidence.company_size && (
-                      <Badge variant="outline">{evidence.company_size}</Badge>
+                    {(evidence as any).company_size && (
+                      <Badge variant="outline">{(evidence as any).company_size}</Badge>
                     )}
                     {evidence.industry && (
                       <Badge variant="outline">{evidence.industry}</Badge>
@@ -168,7 +168,7 @@ const PublicEvidenceDetail = () => {
 
                 <CardContent className="pt-6">
                   <ReviewContent 
-                    reviewData={evidence.review_data} 
+                    reviewData={(evidence as any).review_data} 
                     content={evidence.content}
                   />
 
@@ -181,11 +181,11 @@ const PublicEvidenceDetail = () => {
                     </div>
                   )}
 
-                  {evidence.use_cases && (
+                  {(evidence as any).use_cases && (
                     <div className="mt-6">
                       <h3 className="font-semibold text-lg mb-3">Use Cases</h3>
                       <p className="text-muted-foreground whitespace-pre-wrap">
-                        {evidence.use_cases}
+                        {(evidence as any).use_cases}
                       </p>
                     </div>
                   )}
@@ -199,8 +199,8 @@ const PublicEvidenceDetail = () => {
                 <CardContent>
                   <ShareButtons 
                     url={window.location.href}
-                    title={`${evidence.customer_name} from ${evidence.company} - ${evidence.title}`}
-                    description={evidence.review_data?.love || evidence.content}
+                    title={`${(evidence as any).customer_name} from ${evidence.company} - ${evidence.title}`}
+                    description={(evidence as any).review_data?.love || evidence.content}
                   />
                 </CardContent>
               </Card>
@@ -217,23 +217,23 @@ const PublicEvidenceDetail = () => {
                     <div>
                       <p className="text-sm font-medium">Published</p>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(evidence.review_date || evidence.created_at), "MMMM d, yyyy")}
+                        {format(new Date((evidence as any).review_date || (evidence as any).created_at), "MMMM d, yyyy")}
                       </p>
                     </div>
                   </div>
 
-                  {evidence.external_url && (
+                  {(evidence as any).external_url && (
                     <div className="flex items-start gap-3">
                       <Globe className="h-5 w-5 text-muted-foreground mt-0.5" />
                       <div>
                         <p className="text-sm font-medium">Original Source</p>
                         <a 
-                          href={evidence.external_url}
+                          href={(evidence as any).external_url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:underline break-all"
                         >
-                          View on {evidence.integration_source || 'External Site'}
+                          View on {(evidence as any).integration_source || 'External Site'}
                         </a>
                       </div>
                     </div>
@@ -247,7 +247,7 @@ const PublicEvidenceDetail = () => {
                     <CardTitle className="text-lg">Related Testimonials</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {relatedTestimonials.map((related) => (
+                    {relatedTestimonials.map((related: any) => (
                       <Link 
                         key={related.id} 
                         to={`/testimonials/${related.id}`}
