@@ -12,6 +12,8 @@ import EvidenceDetail from "./pages/EvidenceDetail";
 import EditEvidence from "./pages/EditEvidence";
 import AdminReview from "./pages/AdminReview";
 import Integrations from "./pages/Integrations";
+import Testimonials from "./pages/Testimonials";
+import PublicEvidenceDetail from "./pages/PublicEvidenceDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/testimonials" element={<Testimonials />} />
+          <Route path="/testimonials/:id" element={<PublicEvidenceDetail />} />
           <Route path="/submit" element={<ProtectedRoute><Submit /></ProtectedRoute>} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/evidence/:id" element={<ProtectedRoute><EvidenceDetail /></ProtectedRoute>} />
