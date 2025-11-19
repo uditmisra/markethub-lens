@@ -178,14 +178,21 @@ export default function Integrations() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="product_id">Product ID</Label>
+                  <Label htmlFor="product_id">
+                    Product {formData.integration_type === "g2" ? "Slug" : "ID"}
+                  </Label>
                   <Input
                     id="product_id"
                     value={formData.product_id}
                     onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
-                    placeholder="Enter product ID from review site"
+                    placeholder={formData.integration_type === "g2" ? "e.g., spotdraft" : "Enter product ID from review site"}
                     required
                   />
+                  {formData.integration_type === "g2" && (
+                    <p className="text-xs text-muted-foreground">
+                      Enter the product slug from your G2 product URL (e.g., "spotdraft" from g2.com/products/spotdraft)
+                    </p>
+                  )}
                 </div>
                 
                 <div className="space-y-2">

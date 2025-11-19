@@ -67,11 +67,55 @@ Deno.serve(async (req) => {
     if (!apiKey) {
       throw new Error('G2 API key not configured. Please add your API key in the integration settings.');
     }
-    
-    console.log(`Starting G2 sync for product ID: ${integration.product_id}`);
 
-    // Fetch reviews from G2 API
-    const apiUrl = `https://data.g2.com/api/v2/products/${integration.product_id}/reviews?page=1&per_page=50`;
+    // Get product UUID from config, or resolve from slug if needed
+    let productUuid = integration.config?.product_uuid;
+    const productSlug = integration.product_id;
+
+    if (!productUuid) {
+      console.log(`Product UUID not found in config, attempting to resolve slug: ${productSlug}`);
+      
+      // Call resolve-g2-product function to get UUID
+      const resolveResponse = await fetch(
+        `${Deno.env.get('SUPABASE_URL')}/functions/v1/resolve-g2-product`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ productSlug, apiKey }),
+        }
+      );
+
+      if (!resolveResponse.ok) {
+        const errorText = await resolveResponse.text();
+        throw new Error(`Failed to resolve product slug: ${errorText}`);
+      }
+
+      const resolveData = await resolveResponse.json();
+      productUuid = resolveData.productUuid;
+      
+      // Cache the UUID back to integration config
+      await supabase
+        .from('integrations')
+        .update({
+          config: {
+            ...integration.config,
+            product_uuid: productUuid,
+            product_slug: productSlug,
+            product_name: resolveData.productName,
+          },
+        })
+        .eq('id', integrationId);
+
+      console.log(`Resolved and cached product UUID: ${productUuid}`);
+    }
+    
+    console.log(`Starting G2 sync for product: ${productSlug} (UUID: ${productUuid})`);
+
+    // Fetch reviews from G2 API using UUID
+    const apiUrl = `https://data.g2.com/api/v2/products/${productUuid}/reviews?page=1&per_page=50`;
     console.log(`Fetching from G2 API: ${apiUrl}`);
     console.log(`Using API key: ${apiKey.substring(0, 8)}...`);
     

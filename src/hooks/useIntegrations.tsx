@@ -12,6 +12,9 @@ export interface Integration {
   config: {
     api_key?: string;
     created_by?: string;
+    product_uuid?: string;
+    product_slug?: string;
+    product_name?: string;
   };
   is_active: boolean;
   sync_frequency: string;
@@ -43,14 +46,48 @@ export const useIntegrations = () => {
     mutationFn: async (integration: Omit<Integration, "id" | "created_at" | "updated_at">) => {
       const { data: { user } } = await supabase.auth.getUser();
       
+      // For G2 integrations, resolve product slug to UUID
+      let configToSave = {
+        ...integration.config,
+        created_by: user?.id,
+      };
+
+      if (integration.integration_type === "g2" && integration.product_id) {
+        const apiKey = integration.config?.api_key as string;
+        
+        if (!apiKey) {
+          throw new Error("API key is required");
+        }
+
+        // Call resolve-g2-product function
+        const { data: resolveData, error: resolveError } = await supabase.functions.invoke(
+          'resolve-g2-product',
+          {
+            body: { 
+              productSlug: integration.product_id,
+              apiKey 
+            },
+          }
+        );
+
+        if (resolveError) {
+          throw new Error(`Failed to resolve product: ${resolveError.message}`);
+        }
+
+        // Add resolved UUID to config
+        configToSave = {
+          ...configToSave,
+          product_uuid: resolveData.productUuid,
+          product_slug: integration.product_id,
+          product_name: resolveData.productName,
+        };
+      }
+      
       const { data, error } = await supabase
         .from("integrations")
         .insert({
           ...integration,
-          config: {
-            ...integration.config,
-            created_by: user?.id,
-          },
+          config: configToSave,
         })
         .select()
         .single();
@@ -76,9 +113,44 @@ export const useIntegrations = () => {
 
   const updateIntegration = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Integration> & { id: string }) => {
+      // If updating a G2 integration's product_id, resolve the new slug to UUID
+      let updatesToSave = { ...updates };
+
+      if (updates.integration_type === "g2" && updates.product_id) {
+        const apiKey = updates.config?.api_key as string;
+        
+        if (apiKey) {
+          // Call resolve-g2-product function
+          const { data: resolveData, error: resolveError } = await supabase.functions.invoke(
+            'resolve-g2-product',
+            {
+              body: { 
+                productSlug: updates.product_id,
+                apiKey 
+              },
+            }
+          );
+
+          if (resolveError) {
+            throw new Error(`Failed to resolve product: ${resolveError.message}`);
+          }
+
+          // Update config with resolved UUID
+          updatesToSave = {
+            ...updatesToSave,
+            config: {
+              ...updates.config,
+              product_uuid: resolveData.productUuid,
+              product_slug: updates.product_id,
+              product_name: resolveData.productName,
+            },
+          };
+        }
+      }
+
       const { data, error } = await supabase
         .from("integrations")
-        .update(updates)
+        .update(updatesToSave)
         .eq("id", id)
         .select()
         .single();
