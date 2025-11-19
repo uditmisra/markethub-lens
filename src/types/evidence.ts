@@ -28,4 +28,12 @@ export interface Evidence {
   rating?: number;
   review_date?: string;
   reviewer_avatar?: string;
+  review_data?: {
+    love?: string;
+    hate?: string;
+    problems_solving?: string;
+    recommendations?: string;
+    best_use_case?: string;
+    comment?: string;
+  };
 }

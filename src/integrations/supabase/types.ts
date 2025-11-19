@@ -35,6 +35,7 @@ export type Database = {
           product: Database["public"]["Enums"]["product_type"]
           rating: number | null
           results: string | null
+          review_data: Json | null
           review_date: string | null
           reviewer_avatar: string | null
           status: Database["public"]["Enums"]["evidence_status"]
@@ -62,6 +63,7 @@ export type Database = {
           product: Database["public"]["Enums"]["product_type"]
           rating?: number | null
           results?: string | null
+          review_data?: Json | null
           review_date?: string | null
           reviewer_avatar?: string | null
           status?: Database["public"]["Enums"]["evidence_status"]
@@ -89,6 +91,7 @@ export type Database = {
           product?: Database["public"]["Enums"]["product_type"]
           rating?: number | null
           results?: string | null
+          review_data?: Json | null
           review_date?: string | null
           reviewer_avatar?: string | null
           status?: Database["public"]["Enums"]["evidence_status"]

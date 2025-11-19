@@ -153,7 +153,7 @@ export const EvidenceCard = ({ evidence }: EvidenceCardProps) => {
         </div>
 
         <p className="text-muted-foreground mb-4 line-clamp-3">
-          {evidence.content}
+          {evidence.review_data?.love || evidence.review_data?.problems_solving || evidence.content}
         </p>
 
         {evidence.results && (

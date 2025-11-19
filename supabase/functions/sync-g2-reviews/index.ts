@@ -235,6 +235,7 @@ Deno.serve(async (req) => {
           rating: review.star_rating,
           review_date: review.created_at,
           reviewer_avatar: review.reviewer_avatar || null,
+          review_data: review.answers && Object.keys(review.answers).length > 0 ? review.answers : null,
         };
 
         const { error: insertError } = await supabase
