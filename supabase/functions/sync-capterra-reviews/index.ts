@@ -24,8 +24,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let integrationId: string | undefined;
+  
   try {
-    const { integrationId } = await req.json();
+    const body = await req.json();
+    integrationId = body.integrationId;
+    
+    if (!integrationId) {
+      throw new Error('Missing integrationId in request body');
+    }
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -59,22 +66,29 @@ Deno.serve(async (req) => {
     // Get API key from config
     const apiKey = integration.config?.api_key;
     if (!apiKey) {
-      throw new Error('API key not configured');
+      throw new Error('Capterra API key not configured. Please add your API key in the integration settings.');
     }
+    
+    console.log(`Starting Capterra sync for product ID: ${integration.product_id}`);
 
     // Fetch reviews from Capterra API
-    const capterraResponse = await fetch(
-      `https://api.capterra.com/v1/products/${integration.product_id}/reviews?page=1&per_page=50`,
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const apiUrl = `https://api.capterra.com/v1/products/${integration.product_id}/reviews?page=1&per_page=50`;
+    console.log(`Fetching from Capterra API: ${apiUrl}`);
+    console.log(`Using API key: ${apiKey.substring(0, 8)}...`);
+    
+    const capterraResponse = await fetch(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
+    console.log(`Capterra API response status: ${capterraResponse.status} ${capterraResponse.statusText}`);
+    
     if (!capterraResponse.ok) {
-      throw new Error(`Capterra API error: ${capterraResponse.statusText}`);
+      const errorBody = await capterraResponse.text();
+      console.error(`Capterra API error response: ${errorBody}`);
+      throw new Error(`Capterra API error (${capterraResponse.status}): ${capterraResponse.statusText}. Response: ${errorBody}`);
     }
 
     const reviewsData = await capterraResponse.json();
@@ -152,8 +166,7 @@ Deno.serve(async (req) => {
     console.error('Error in sync-capterra-reviews:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Update sync status to failed
-    const { integrationId } = await req.json().catch(() => ({}));
+    // Update sync status to failed using the stored integrationId
     if (integrationId) {
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -167,6 +180,10 @@ Deno.serve(async (req) => {
           last_sync_error: errorMessage,
         })
         .eq('id', integrationId);
+      
+      console.log(`Updated sync status to failed for integration ${integrationId}`);
+    } else {
+      console.error('Cannot update sync status: integrationId not available');
     }
 
     return new Response(

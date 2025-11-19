@@ -23,8 +23,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let integrationId: string | undefined;
+  
   try {
-    const { integrationId } = await req.json();
+    const body = await req.json();
+    integrationId = body.integrationId;
+    
+    if (!integrationId) {
+      throw new Error('Missing integrationId in request body');
+    }
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -58,8 +65,10 @@ Deno.serve(async (req) => {
     // Get API key from config
     const apiKey = integration.config?.api_key;
     if (!apiKey) {
-      throw new Error('API key not configured');
+      throw new Error('G2 API key not configured. Please add your API key in the integration settings.');
     }
+    
+    console.log(`Starting G2 sync for product ID: ${integration.product_id}`);
 
     // Fetch reviews from G2 API
     const apiUrl = `https://data.g2.com/api/v1/products/${integration.product_id}/reviews?page=1&per_page=50`;
@@ -156,8 +165,7 @@ Deno.serve(async (req) => {
     console.error('Error in sync-g2-reviews:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Update sync status to failed
-    const { integrationId } = await req.json().catch(() => ({}));
+    // Update sync status to failed using the stored integrationId
     if (integrationId) {
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -171,6 +179,10 @@ Deno.serve(async (req) => {
           last_sync_error: errorMessage,
         })
         .eq('id', integrationId);
+      
+      console.log(`Updated sync status to failed for integration ${integrationId}`);
+    } else {
+      console.error('Cannot update sync status: integrationId not available');
     }
 
     return new Response(
