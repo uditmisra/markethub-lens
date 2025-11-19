@@ -35,6 +35,7 @@ const Dashboard = () => {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [filterCompleteness, setFilterCompleteness] = useState<string>("all");
+  const [activePreset, setActivePreset] = useState<string | null>(null);
 
   // Extract unique company sizes and industries from evidence
   const uniqueCompanySizes = Array.from(new Set(evidence.map(e => e.company_size).filter(Boolean)));
@@ -89,6 +90,34 @@ const Dashboard = () => {
     setDateFrom(undefined);
     setDateTo(undefined);
     setFilterCompleteness("all");
+    setActivePreset(null);
+  };
+
+  const applyPreset = (preset: string) => {
+    clearAllFilters();
+    setActivePreset(preset);
+    
+    switch(preset) {
+      case "high-value":
+        // 5-star enterprise + excellent quality
+        setFilterRating("5");
+        setFilterCompleteness("excellent");
+        setFilterCompanySize("1001-5000"); // Typically enterprise size
+        break;
+      case "needs-attention":
+        // Pending from last 7 days
+        setFilterStatus("pending");
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        setDateFrom(sevenDaysAgo);
+        break;
+      case "top-testimonials":
+        // 5-star published with excellent/good quality
+        setFilterRating("5");
+        setFilterStatus("published");
+        setFilterCompleteness("excellent");
+        break;
+    }
   };
 
   const hasActiveFilters = searchTerm || filterType !== "all" || filterStatus !== "all" || 
@@ -183,6 +212,42 @@ const Dashboard = () => {
 
         {/* Filters and Search */}
         <Card className="p-6 mb-8">
+          {/* Filter Presets */}
+          <div className="mb-6 pb-6 border-b">
+            <div className="flex items-center gap-2 mb-3">
+              <h3 className="text-sm font-medium text-muted-foreground">Quick Filters</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={activePreset === "high-value" ? "default" : "outline"}
+                size="sm"
+                onClick={() => applyPreset("high-value")}
+                className="gap-2"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                High-value Reviews
+              </Button>
+              <Button
+                variant={activePreset === "needs-attention" ? "default" : "outline"}
+                size="sm"
+                onClick={() => applyPreset("needs-attention")}
+                className="gap-2"
+              >
+                <Clock className="h-4 w-4" />
+                Needs Attention
+              </Button>
+              <Button
+                variant={activePreset === "top-testimonials" ? "default" : "outline"}
+                size="sm"
+                onClick={() => applyPreset("top-testimonials")}
+                className="gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Top Testimonials
+              </Button>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-muted-foreground" />
@@ -217,12 +282,12 @@ const Dashboard = () => {
               <Input
                 placeholder="Search evidence..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setActivePreset(null); }}
                 className="pl-9"
               />
             </div>
 
-            <Select value={filterType} onValueChange={(value) => setFilterType(value as EvidenceType | "all")}>
+            <Select value={filterType} onValueChange={(value) => { setFilterType(value as EvidenceType | "all"); setActivePreset(null); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
@@ -236,7 +301,7 @@ const Dashboard = () => {
               </SelectContent>
             </Select>
 
-            <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as EvidenceStatus | "all")}>
+            <Select value={filterStatus} onValueChange={(value) => { setFilterStatus(value as EvidenceStatus | "all"); setActivePreset(null); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -249,7 +314,7 @@ const Dashboard = () => {
               </SelectContent>
             </Select>
 
-            <Select value={filterProduct} onValueChange={(value) => setFilterProduct(value as ProductType | "all")}>
+            <Select value={filterProduct} onValueChange={(value) => { setFilterProduct(value as ProductType | "all"); setActivePreset(null); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Product" />
               </SelectTrigger>
@@ -263,7 +328,7 @@ const Dashboard = () => {
               </SelectContent>
             </Select>
 
-            <Select value={filterSource} onValueChange={setFilterSource}>
+            <Select value={filterSource} onValueChange={(value) => { setFilterSource(value); setActivePreset(null); }}>
               <SelectTrigger>
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
@@ -279,7 +344,7 @@ const Dashboard = () => {
           {/* Advanced Filters */}
           {showAdvancedFilters && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
-              <Select value={filterRating} onValueChange={setFilterRating}>
+              <Select value={filterRating} onValueChange={(value) => { setFilterRating(value); setActivePreset(null); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Rating" />
                 </SelectTrigger>
@@ -291,7 +356,7 @@ const Dashboard = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={filterCompanySize} onValueChange={setFilterCompanySize}>
+              <Select value={filterCompanySize} onValueChange={(value) => { setFilterCompanySize(value); setActivePreset(null); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Company Size" />
                 </SelectTrigger>
@@ -303,7 +368,7 @@ const Dashboard = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={filterIndustry} onValueChange={setFilterIndustry}>
+              <Select value={filterIndustry} onValueChange={(value) => { setFilterIndustry(value); setActivePreset(null); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Industry" />
                 </SelectTrigger>
@@ -315,7 +380,7 @@ const Dashboard = () => {
                 </SelectContent>
               </Select>
 
-              <Select value={filterCompleteness} onValueChange={setFilterCompleteness}>
+              <Select value={filterCompleteness} onValueChange={(value) => { setFilterCompleteness(value); setActivePreset(null); }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Quality Score" />
                 </SelectTrigger>
@@ -346,7 +411,7 @@ const Dashboard = () => {
                     <Calendar
                       mode="single"
                       selected={dateFrom}
-                      onSelect={setDateFrom}
+                      onSelect={(date) => { setDateFrom(date); setActivePreset(null); }}
                       initialFocus
                       className="pointer-events-auto"
                     />
@@ -370,7 +435,7 @@ const Dashboard = () => {
                     <Calendar
                       mode="single"
                       selected={dateTo}
-                      onSelect={setDateTo}
+                      onSelect={(date) => { setDateTo(date); setActivePreset(null); }}
                       initialFocus
                       className="pointer-events-auto"
                     />
