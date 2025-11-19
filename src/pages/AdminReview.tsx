@@ -7,17 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useUserRole } from "@/hooks/useUserRole";
 import { EvidenceStatus } from "@/types/evidence";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, Archive } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Archive, Trash2 } from "lucide-react";
 
 export default function AdminReview() {
   const navigate = useNavigate();
-  const { evidence, isLoading, updateEvidence } = useEvidence();
+  const { evidence, isLoading, updateEvidence, bulkUpdateEvidence, bulkDeleteEvidence } = useEvidence();
   const { canApprove, isLoading: roleLoading } = useUserRole();
   const [statusFilter, setStatusFilter] = useState<EvidenceStatus | "all">("pending");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [actionDialog, setActionDialog] = useState<{
     open: boolean;
     evidenceId: string;
@@ -28,6 +30,13 @@ export default function AdminReview() {
     evidenceId: "",
     action: null,
     title: "",
+  });
+  const [bulkActionDialog, setBulkActionDialog] = useState<{
+    open: boolean;
+    action: "approve" | "publish" | "reject" | "delete" | null;
+  }>({
+    open: false,
+    action: null,
   });
 
   // Redirect if not authorized
@@ -60,8 +69,48 @@ export default function AdminReview() {
     }
   };
 
+  const handleBulkAction = async () => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      if (bulkActionDialog.action === "delete") {
+        await bulkDeleteEvidence.mutateAsync(selectedIds);
+      } else {
+        const statusMap = {
+          approve: "approved" as EvidenceStatus,
+          publish: "published" as EvidenceStatus,
+          reject: "archived" as EvidenceStatus,
+        };
+        const newStatus = statusMap[bulkActionDialog.action!];
+        await bulkUpdateEvidence.mutateAsync({ ids: selectedIds, status: newStatus });
+      }
+      setSelectedIds([]);
+      setBulkActionDialog({ open: false, action: null });
+    } catch (error) {
+      toast.error("Failed to perform bulk action");
+    }
+  };
+
   const openActionDialog = (id: string, action: "approve" | "publish" | "reject", title: string) => {
     setActionDialog({ open: true, evidenceId: id, action, title });
+  };
+
+  const openBulkActionDialog = (action: "approve" | "publish" | "reject" | "delete") => {
+    setBulkActionDialog({ open: true, action });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredEvidence.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredEvidence.map(e => e.id));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   if (isLoading || roleLoading) {
@@ -102,79 +151,171 @@ export default function AdminReview() {
               </Select>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+        </Card>
+
+        {selectedIds.length > 0 && (
+          <Card className="mb-6 bg-primary/5 border-primary/20">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{selectedIds.length} selected</span>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedIds([])}>
+                    Clear
+                  </Button>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openBulkActionDialog("approve")}
+                    className="gap-2"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Approve Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openBulkActionDialog("publish")}
+                    className="gap-2"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Publish Selected
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openBulkActionDialog("reject")}
+                    className="gap-2"
+                  >
+                    <Archive className="h-4 w-4" />
+                    Reject Selected
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => openBulkActionDialog("delete")}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardContent className="p-0">
             {filteredEvidence.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 No evidence found for this status
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredEvidence.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{item.title}</TableCell>
-                        <TableCell>{item.company}</TableCell>
-                        <TableCell className="capitalize">{item.evidenceType}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={statusColors[item.status]}>
-                            {item.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{new Date(item.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-2 justify-end">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={selectedIds.length === filteredEvidence.length && filteredEvidence.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEvidence.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.includes(item.id)}
+                          onCheckedChange={() => toggleSelect(item.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium max-w-xs truncate">{item.title}</TableCell>
+                      <TableCell>{item.customerName}</TableCell>
+                      <TableCell>
+                        <div>
+                          <div>{item.company}</div>
+                          {item.company_size && (
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {item.company_size}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{item.evidenceType}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[item.status]}>{item.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {item.rating ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-500">★</span>
+                            <span className="text-sm font-medium">{item.rating}/5</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">N/A</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => navigate(`/evidence/${item.id}`)}
+                            className="gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View
+                          </Button>
+                          {item.status === "pending" && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => navigate(`/evidence/${item.id}`)}
+                              onClick={() => openActionDialog(item.id, "approve", item.title)}
+                              className="gap-2 text-blue-500 hover:text-blue-600"
                             >
-                              <Eye className="h-4 w-4" />
+                              <CheckCircle className="h-4 w-4" />
+                              Approve
                             </Button>
-                            {item.status === "pending" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openActionDialog(item.id, "approve", item.title)}
-                              >
-                                <CheckCircle className="h-4 w-4 text-blue-500" />
-                              </Button>
-                            )}
-                            {item.status === "approved" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openActionDialog(item.id, "publish", item.title)}
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                              </Button>
-                            )}
-                            {(item.status === "pending" || item.status === "approved") && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => openActionDialog(item.id, "reject", item.title)}
-                              >
-                                <XCircle className="h-4 w-4 text-red-500" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                          )}
+                          {item.status === "approved" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openActionDialog(item.id, "publish", item.title)}
+                              className="gap-2 text-green-500 hover:text-green-600"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Publish
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openActionDialog(item.id, "reject", item.title)}
+                            className="gap-2 text-red-500 hover:text-red-600"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            Reject
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
@@ -197,11 +338,39 @@ export default function AdminReview() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                if (actionDialog.action === "approve") handleStatusChange("approved");
-                if (actionDialog.action === "publish") handleStatusChange("published");
-                if (actionDialog.action === "reject") handleStatusChange("archived");
+                const statusMap = {
+                  approve: "approved" as EvidenceStatus,
+                  publish: "published" as EvidenceStatus,
+                  reject: "archived" as EvidenceStatus,
+                };
+                handleStatusChange(statusMap[actionDialog.action!]);
               }}
             >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk action dialog */}
+      <AlertDialog open={bulkActionDialog.open} onOpenChange={(open) => setBulkActionDialog({ ...bulkActionDialog, open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {bulkActionDialog.action === "approve" && "Approve Selected Evidence"}
+              {bulkActionDialog.action === "publish" && "Publish Selected Evidence"}
+              {bulkActionDialog.action === "reject" && "Reject Selected Evidence"}
+              {bulkActionDialog.action === "delete" && "Delete Selected Evidence"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to {bulkActionDialog.action} {selectedIds.length} item(s)?
+              {bulkActionDialog.action === "delete" && " This action cannot be undone."}
+              {bulkActionDialog.action === "reject" && " This will archive the selected evidence."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkAction}>
               Confirm
             </AlertDialogAction>
           </AlertDialogFooter>

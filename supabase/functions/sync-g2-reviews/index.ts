@@ -13,9 +13,20 @@ interface G2Review {
   user: {
     name?: string;
     company_name?: string;
+    job_title?: string;
   };
   url: string;
   created_at: string;
+  company_size?: string;
+  industry?: string;
+  reviewer_avatar?: string;
+  answers?: {
+    love?: string;
+    hate?: string;
+    problems_solving?: string;
+    recommendations?: string;
+    best_use_case?: string;
+  };
 }
 
 Deno.serve(async (req) => {
@@ -172,19 +183,24 @@ Deno.serve(async (req) => {
           customer_name: review.user?.name || 'Anonymous',
           company: review.user?.company_name || 'Not specified',
           email: 'imported@g2.com',
-          job_title: null,
+          job_title: review.user?.job_title || null,
           evidence_type: 'review' as const,
           product: 'platform' as const, // Map to your product types
-          title: review.title || review.text.substring(0, 100),
+          title: review.title,
           content: review.text,
-          results: `⭐ ${review.star_rating}/5 stars on G2`,
-          use_cases: null,
+          results: review.answers?.problems_solving || `⭐ ${review.star_rating}/5 stars on G2`,
+          use_cases: review.answers?.best_use_case || null,
           status: 'pending' as const,
           integration_source: 'g2',
           external_id: review.id,
           external_url: review.url,
           imported_at: new Date().toISOString(),
           created_by: integration.config?.created_by || null,
+          company_size: review.company_size || null,
+          industry: review.industry || null,
+          rating: review.star_rating,
+          review_date: review.created_at,
+          reviewer_avatar: review.reviewer_avatar || null,
         };
 
         const { error: insertError } = await supabase

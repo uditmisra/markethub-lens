@@ -5,14 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield, Download, Filter } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield, Download, Filter, Calendar as CalendarIcon, X } from "lucide-react";
 import { EvidenceType, EvidenceStatus, ProductType } from "@/types/evidence";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const Dashboard = () => {
   const { evidence, isLoading } = useEvidence();
