@@ -10,6 +10,7 @@ import { useEvidence } from "@/hooks/useEvidence";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAuth } from "@/hooks/useAuth";
 import { Building2, Calendar, Mail, User, Briefcase, ArrowLeft, FileText, Target, Loader2, Edit, Trash2, Archive } from "lucide-react";
+import ReviewContent from "@/components/ReviewContent";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +57,7 @@ const EvidenceDetail = () => {
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         createdBy: data.created_by,
+        review_data: data.review_data,
       } as Evidence & { createdBy: string };
     },
   });
@@ -150,11 +152,10 @@ const EvidenceDetail = () => {
                 {evidence.title}
               </h1>
 
-              <div className="prose prose-lg max-w-none">
-                <p className="text-muted-foreground leading-relaxed">
-                  {evidence.content}
-                </p>
-              </div>
+              <ReviewContent 
+                reviewData={evidence.review_data}
+                content={evidence.content}
+              />
             </Card>
 
             {evidence.results && (
