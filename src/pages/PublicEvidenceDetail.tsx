@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import ReviewContent from "@/components/ReviewContent";
 import ShareButtons from "@/components/ShareButtons";
+import SocialMeta from "@/components/SocialMeta";
 import { Building2, Briefcase, Calendar, Star, Globe, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -104,8 +105,21 @@ const PublicEvidenceDetail = () => {
     );
   }
 
+  const shareUrl = window.location.href;
+  const shareTitle = evidence?.title || "Customer Testimonial";
+  const shareDescription = evidence?.content ? 
+    (evidence.content as any).substring(0, 160) + "..." : 
+    "Check out this customer testimonial";
+
   return (
     <div className="min-h-screen bg-background">
+      <SocialMeta 
+        title={shareTitle}
+        description={shareDescription}
+        image={(evidence as any)?.reviewer_avatar}
+        url={shareUrl}
+        type="article"
+      />
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <Button variant="ghost" asChild className="mb-6">
@@ -198,9 +212,9 @@ const PublicEvidenceDetail = () => {
                 </CardHeader>
                 <CardContent>
                   <ShareButtons 
-                    url={window.location.href}
-                    title={`${(evidence as any).customer_name} from ${evidence.company} - ${evidence.title}`}
-                    description={(evidence as any).review_data?.love || evidence.content}
+                    url={shareUrl}
+                    title={shareTitle}
+                    description={shareDescription}
                   />
                 </CardContent>
               </Card>
