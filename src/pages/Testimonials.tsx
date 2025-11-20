@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Building2, Briefcase, Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
+import SocialMeta from "@/components/SocialMeta";
 
 const Testimonials = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,6 +74,11 @@ const Testimonials = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SocialMeta 
+        title="Customer Testimonials - Wall of Love"
+        description="Discover what our customers have to say about their experience with our products and services."
+        url={window.location.href}
+      />
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
