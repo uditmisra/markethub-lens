@@ -18,9 +18,10 @@ import { exportToCSV, exportToJSON } from "@/utils/exportData";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { calculateCompleteness } from "@/utils/calculateCompleteness";
+import { toast } from "sonner";
 
 const Dashboard = () => {
-  const { evidence, isLoading } = useEvidence();
+  const { evidence, isLoading, updateEvidence } = useEvidence();
   const { signOut } = useAuth();
   const { roles, isAdmin, isReviewer } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,6 +118,21 @@ const Dashboard = () => {
         setFilterStatus("published");
         setFilterCompleteness("excellent");
         break;
+      case "my-published":
+        setFilterStatus("published");
+        break;
+    }
+  };
+
+  const handleQuickPublish = async (id: string) => {
+    try {
+      await updateEvidence.mutateAsync({
+        id,
+        updates: { status: "published" as EvidenceStatus },
+      });
+      toast.success("Evidence published successfully!");
+    } catch (error) {
+      toast.error("Failed to publish evidence");
     }
   };
 
@@ -244,6 +260,15 @@ const Dashboard = () => {
               >
                 <FileText className="h-4 w-4" />
                 Top Testimonials
+              </Button>
+              <Button
+                variant={activePreset === "my-published" ? "default" : "outline"}
+                size="sm"
+                onClick={() => applyPreset("my-published")}
+                className="gap-2"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                My Published Reviews
               </Button>
             </div>
           </div>
@@ -477,7 +502,12 @@ const Dashboard = () => {
           {filteredEvidence.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvidence.map((item) => (
-                <EvidenceCard key={item.id} evidence={item} />
+                <EvidenceCard 
+                  key={item.id} 
+                  evidence={item}
+                  showQuickActions={isAdmin || isReviewer}
+                  onQuickPublish={handleQuickPublish}
+                />
               ))}
             </div>
           ) : (

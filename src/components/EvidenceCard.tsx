@@ -3,13 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Evidence } from "@/types/evidence";
-import { Building2, Calendar, FileText, ExternalLink, Star, Users, Briefcase, Info } from "lucide-react";
+import { Building2, Calendar, FileText, ExternalLink, Star, Users, Briefcase, Info, MoreVertical, Copy, Globe } from "lucide-react";
 import { Link } from "react-router-dom";
 import { calculateCompleteness, getCompletenessLabel, getCompletenessColor } from "@/utils/calculateCompleteness";
+import { toast } from "sonner";
 
 interface EvidenceCardProps {
   evidence: Evidence;
+  showQuickActions?: boolean;
+  onQuickPublish?: (id: string) => void;
 }
 
 const statusColors = {
@@ -27,9 +32,29 @@ const typeLabels = {
   video: "Video"
 };
 
-export const EvidenceCard = ({ evidence }: EvidenceCardProps) => {
+export const EvidenceCard = ({ evidence, showQuickActions = false, onQuickPublish }: EvidenceCardProps) => {
   const completeness = calculateCompleteness(evidence);
   const completenessInfo = getCompletenessLabel(completeness.score);
+
+  const copyPublicLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}/testimonials/${evidence.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Public link copied to clipboard!");
+  };
+
+  const viewPublicPage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(`/testimonials/${evidence.id}`, '_blank');
+  };
+
+  const handleQuickPublish = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onQuickPublish?.(evidence.id);
+  };
 
   const renderStarRating = (rating?: number) => {
     if (!rating) return null;

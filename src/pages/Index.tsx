@@ -87,6 +87,19 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Testimonials Preview Section */}
+      <section className="container mx-auto px-4 py-20 bg-muted/30">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4 text-foreground">See What Our Customers Are Saying</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+            Browse real customer testimonials and success stories from satisfied clients.
+          </p>
+          <Button size="lg" variant="outline" asChild className="shadow-medium">
+            <Link to="/testimonials">View Live Testimonials →</Link>
+          </Button>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
         <Card className="p-12 text-center bg-gradient-hero">

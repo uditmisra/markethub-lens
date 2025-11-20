@@ -48,6 +48,20 @@ export const useEvidence = () => {
     },
   });
 
+  // Query for pending count (for badge)
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ["evidence-pending-count"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("evidence")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
   const createEvidence = useMutation({
     mutationFn: async (newEvidence: Omit<Evidence, "id" | "createdAt" | "updatedAt" | "status">) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -239,6 +253,7 @@ export const useEvidence = () => {
   return {
     evidence,
     isLoading,
+    pendingCount,
     createEvidence,
     updateEvidence,
     deleteEvidence,

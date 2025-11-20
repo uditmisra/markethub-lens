@@ -1,11 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { FileText } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useEvidence } from "@/hooks/useEvidence";
 
 export const Header = () => {
   const location = useLocation();
   const { canApprove, isAdmin } = useUserRole();
+  const { pendingCount } = useEvidence();
   
   const isActive = (path: string) => location.pathname === path;
   
@@ -27,6 +30,12 @@ export const Header = () => {
             <Link to="/">Home</Link>
           </Button>
           <Button
+            variant={isActive("/testimonials") ? "secondary" : "ghost"}
+            asChild
+          >
+            <Link to="/testimonials">Testimonials</Link>
+          </Button>
+          <Button
             variant={isActive("/submit") ? "secondary" : "ghost"}
             asChild
           >
@@ -42,17 +51,36 @@ export const Header = () => {
             <Button
               variant={isActive("/admin/review") ? "secondary" : "ghost"}
               asChild
+              className="relative"
             >
-              <Link to="/admin/review">Review</Link>
+              <Link to="/admin/review">
+                Review
+                {pendingCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="ml-2 h-5 min-w-5 px-1.5 rounded-full text-xs"
+                  >
+                    {pendingCount}
+                  </Badge>
+                )}
+              </Link>
             </Button>
           )}
           {isAdmin && (
-            <Button
-              variant={isActive("/integrations") ? "secondary" : "ghost"}
-              asChild
-            >
-              <Link to="/integrations">Integrations</Link>
-            </Button>
+            <>
+              <Button
+                variant={isActive("/integrations") ? "secondary" : "ghost"}
+                asChild
+              >
+                <Link to="/integrations">Integrations</Link>
+              </Button>
+              <Button
+                variant={isActive("/widgets") ? "secondary" : "ghost"}
+                asChild
+              >
+                <Link to="/widgets">Widgets</Link>
+              </Button>
+            </>
           )}
         </nav>
       </div>

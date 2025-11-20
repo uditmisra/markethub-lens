@@ -7,12 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useUserRole } from "@/hooks/useUserRole";
 import { EvidenceStatus } from "@/types/evidence";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, Archive, Trash2 } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Archive, Trash2, Copy, ExternalLink, Share2 } from "lucide-react";
 
 export default function AdminReview() {
   const navigate = useNavigate();
@@ -38,6 +39,15 @@ export default function AdminReview() {
     open: false,
     action: null,
   });
+  const [publishSuccessDialog, setPublishSuccessDialog] = useState<{
+    open: boolean;
+    evidenceId: string;
+    title: string;
+  }>({
+    open: false,
+    evidenceId: "",
+    title: "",
+  });
 
   // Redirect if not authorized
   if (!roleLoading && !canApprove) {
@@ -62,11 +72,39 @@ export default function AdminReview() {
         id: actionDialog.evidenceId,
         updates: { status: newStatus },
       });
-      toast.success(`Evidence ${newStatus} successfully`);
+      
+      // Show success dialog for publish action
+      if (newStatus === "published") {
+        setPublishSuccessDialog({
+          open: true,
+          evidenceId: actionDialog.evidenceId,
+          title: actionDialog.title,
+        });
+      } else {
+        toast.success(`Evidence ${newStatus} successfully`);
+      }
+      
       setActionDialog({ open: false, evidenceId: "", action: null, title: "" });
     } catch (error) {
       toast.error(`Failed to ${actionDialog.action} evidence`);
     }
+  };
+
+  const copyPublicLink = (id: string) => {
+    const url = `${window.location.origin}/testimonials/${id}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Public link copied to clipboard!");
+  };
+
+  const shareToTwitter = (id: string, title: string) => {
+    const url = `${window.location.origin}/testimonials/${id}`;
+    const text = `Check out this testimonial: ${title}`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const shareToLinkedIn = (id: string) => {
+    const url = `${window.location.origin}/testimonials/${id}`;
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
   };
 
   const handleBulkAction = async () => {
@@ -352,7 +390,6 @@ export default function AdminReview() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Bulk action dialog */}
       <AlertDialog open={bulkActionDialog.open} onOpenChange={(open) => setBulkActionDialog({ ...bulkActionDialog, open })}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -376,6 +413,80 @@ export default function AdminReview() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Publish Success Dialog */}
+      <Dialog open={publishSuccessDialog.open} onOpenChange={(open) => setPublishSuccessDialog({ ...publishSuccessDialog, open })}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Successfully Published!
+            </DialogTitle>
+            <DialogDescription>
+              "{publishSuccessDialog.title}" is now live and visible on your public testimonials page.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-sm font-medium mb-2">Public URL:</p>
+              <p className="text-xs text-muted-foreground break-all">
+                {window.location.origin}/testimonials/{publishSuccessDialog.evidenceId}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                onClick={() => copyPublicLink(publishSuccessDialog.evidenceId)}
+                className="w-full"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Link
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => window.open(`/testimonials/${publishSuccessDialog.evidenceId}`, '_blank')}
+                className="w-full"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                View Public Page
+              </Button>
+            </div>
+
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-2">Share:</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => shareToTwitter(publishSuccessDialog.evidenceId, publishSuccessDialog.title)}
+                  className="flex-1"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Twitter
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => shareToLinkedIn(publishSuccessDialog.evidenceId)}
+                  className="flex-1"
+                >
+                  <Share2 className="h-4 w-4 mr-2" />
+                  LinkedIn
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setPublishSuccessDialog({ open: false, evidenceId: "", title: "" })}>
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
