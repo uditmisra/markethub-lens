@@ -123,9 +123,23 @@ export const EvidenceCard = ({ evidence, showQuickActions = false, onQuickPublis
               <Badge variant="outline" className="text-xs">
                 {typeLabels[evidence.evidenceType]}
               </Badge>
-              <Badge variant="outline" className={`text-xs ${statusColors[evidence.status]}`}>
-                {evidence.status}
-              </Badge>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="outline" className={`text-xs ${statusColors[evidence.status]} cursor-help`}>
+                      {evidence.status}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      {evidence.status === "pending" && "Waiting for admin/reviewer approval"}
+                      {evidence.status === "approved" && "Approved - ready to be published"}
+                      {evidence.status === "published" && "Live on public testimonials page"}
+                      {evidence.status === "archived" && "Not visible publicly"}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               {evidence.integration_source && (
                 <Badge variant="secondary" className="text-xs">
                   {evidence.integration_source === "g2" ? "G2" : evidence.integration_source === "capterra" ? "Capterra" : "Imported"}

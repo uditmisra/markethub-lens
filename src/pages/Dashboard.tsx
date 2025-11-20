@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield, Download, Filter, Calendar as CalendarIcon, X } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle2, Clock, Archive, Loader2, LogOut, Shield, Download, Filter, Calendar as CalendarIcon, X, Globe } from "lucide-react";
 import { EvidenceType, EvidenceStatus, ProductType } from "@/types/evidence";
 import { exportToCSV, exportToJSON } from "@/utils/exportData";
 import { cn } from "@/lib/utils";
@@ -141,6 +141,8 @@ const Dashboard = () => {
                           filterCompanySize !== "all" || filterIndustry !== "all" || dateFrom || dateTo ||
                           filterCompleteness !== "all";
 
+  const publishedCount = evidence.filter(e => e.status === "published").length;
+
   const stats = [
     {
       label: "Total Evidence",
@@ -150,7 +152,7 @@ const Dashboard = () => {
     },
     {
       label: "Published",
-      value: evidence.filter(e => e.status === "published").length,
+      value: publishedCount,
       icon: CheckCircle2,
       color: "text-success"
     },
@@ -225,6 +227,30 @@ const Dashboard = () => {
             </Card>
           ))}
         </div>
+
+        {/* Widget CTA for Admins */}
+        {(isAdmin || isReviewer) && publishedCount > 0 && (
+          <Card className="p-6 mb-8 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold mb-2">Embed Testimonials on Your Website</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  You have <span className="font-bold text-primary">{publishedCount}</span> published testimonials ready to showcase. 
+                  Create customizable widgets to display them on your site.
+                </p>
+                <Button asChild>
+                  <Link to="/widgets">
+                    <Globe className="h-4 w-4 mr-2" />
+                    Generate Widget Code
+                  </Link>
+                </Button>
+              </div>
+              <div className="hidden md:flex items-center justify-center h-20 w-20 bg-primary/10 rounded-lg">
+                <Globe className="h-10 w-10 text-primary" />
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Filters and Search */}
         <Card className="p-6 mb-8">
