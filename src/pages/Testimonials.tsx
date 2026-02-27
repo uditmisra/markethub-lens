@@ -1,23 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Evidence } from "@/types/evidence";
-import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Star, Building2, Briefcase, Calendar, Heart } from "lucide-react";
-import { format } from "date-fns";
-import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Search } from "lucide-react";
 import SocialMeta from "@/components/SocialMeta";
+import StatsHero from "@/components/wall/StatsHero";
+import WordCloud from "@/components/wall/WordCloud";
+import MasonryGrid from "@/components/wall/MasonryGrid";
+import TestimonialCard from "@/components/wall/TestimonialCard";
+
+const PILL_FILTERS = [
+  { label: "All", value: "all" },
+  { label: "⭐ 5 Stars", value: "5" },
+  { label: "⭐ 4+ Stars", value: "4" },
+  { label: "Case Studies", value: "case-study" },
+  { label: "Reviews", value: "review" },
+  { label: "Quotes", value: "quote" },
+];
 
 const Testimonials = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [productFilter, setProductFilter] = useState<string>("all");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [ratingFilter, setRatingFilter] = useState<string>("all");
+  const [activeFilter, setActiveFilter] = useState("all");
 
   const { data: testimonials = [], isLoading } = useQuery({
     queryKey: ["public-testimonials"],
@@ -26,6 +31,7 @@ const Testimonials = () => {
         .from("evidence")
         .select("*")
         .eq("status", "published")
+        .or("rating.gte.4,rating.is.null")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -33,99 +39,72 @@ const Testimonials = () => {
     },
   });
 
-  const filteredTestimonials = testimonials.filter((t: any) => {
-    const matchesSearch = 
-      t.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.content.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesProduct = productFilter === "all" || t.product === productFilter;
-    const matchesType = typeFilter === "all" || t.evidence_type === typeFilter;
-    const matchesRating = ratingFilter === "all" || (t.rating && t.rating >= parseInt(ratingFilter));
+  const filteredTestimonials = useMemo(() => {
+    return testimonials.filter((t: any) => {
+      const matchesSearch =
+        !searchQuery ||
+        t.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.content.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesSearch && matchesProduct && matchesType && matchesRating;
-  });
+      let matchesFilter = true;
+      if (activeFilter === "5") matchesFilter = t.rating === 5;
+      else if (activeFilter === "4") matchesFilter = t.rating >= 4;
+      else if (activeFilter !== "all") matchesFilter = t.evidence_type === activeFilter;
 
-  const renderStars = (rating: number) => (
-    <div className="flex gap-1">
-      {[...Array(5)].map((_, i) => (
-        <Star key={i} className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-muted"}`} />
-      ))}
-    </div>
-  );
+      return matchesSearch && matchesFilter;
+    });
+  }, [testimonials, searchQuery, activeFilter]);
 
-  const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = { "testimonial": "Testimonial", "case-study": "Case Study", "review": "Review", "quote": "Quote", "video": "Video" };
-    return labels[type] || type;
-  };
+  const averageRating = useMemo(() => {
+    const rated = testimonials.filter((t: any) => t.rating);
+    if (rated.length === 0) return 0;
+    return Math.round((rated.reduce((sum: number, t: any) => sum + t.rating, 0) / rated.length) * 10) / 10;
+  }, [testimonials]);
 
   return (
     <div className="min-h-screen bg-background">
-      <SocialMeta 
+      <SocialMeta
         title="Wall of Love — Customer Testimonials"
         description="Discover what our customers have to say about their experience."
         url={window.location.href}
       />
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium mb-4">
-              <Heart className="h-4 w-4" />
-              Wall of Love
-            </div>
-            <h1 className="text-4xl font-bold text-foreground mb-4">
-              What Our Customers Say
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Real stories from real people who use our products every day.
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-10">
+        <div className="max-w-6xl mx-auto">
+          <StatsHero totalCount={testimonials.length} averageRating={averageRating} />
 
-          <div className="bg-card rounded-lg border p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Input placeholder="Search testimonials..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="md:col-span-1" />
-              <Select value={productFilter} onValueChange={setProductFilter}>
-                <SelectTrigger><SelectValue placeholder="All Products" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Products</SelectItem>
-                  <SelectItem value="platform">Platform</SelectItem>
-                  <SelectItem value="analytics">Analytics</SelectItem>
-                  <SelectItem value="integration">Integration</SelectItem>
-                  <SelectItem value="api">API</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger><SelectValue placeholder="All Types" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="testimonial">Testimonials</SelectItem>
-                  <SelectItem value="case-study">Case Studies</SelectItem>
-                  <SelectItem value="review">Reviews</SelectItem>
-                  <SelectItem value="quote">Quotes</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                <SelectTrigger><SelectValue placeholder="All Ratings" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Ratings</SelectItem>
-                  <SelectItem value="5">5 Stars</SelectItem>
-                  <SelectItem value="4">4+ Stars</SelectItem>
-                  <SelectItem value="3">3+ Stars</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <WordCloud testimonials={testimonials} />
 
-          <div className="mb-6 text-sm text-muted-foreground">
-            Showing {filteredTestimonials.length} {filteredTestimonials.length === 1 ? 'testimonial' : 'testimonials'}
+          {/* Search + pill filters */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search testimonials..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {PILL_FILTERS.map((f) => (
+                <Badge
+                  key={f.value}
+                  variant={activeFilter === f.value ? "default" : "outline"}
+                  className="cursor-pointer hover:bg-primary/10 transition-colors px-3 py-1 text-xs"
+                  onClick={() => setActiveFilter(f.value)}
+                >
+                  {f.label}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="h-64 animate-pulse bg-muted" />
+                <div key={i} className="mb-5 break-inside-avoid h-48 rounded-xl bg-muted animate-pulse" />
               ))}
             </div>
           ) : filteredTestimonials.length === 0 ? (
@@ -133,55 +112,11 @@ const Testimonials = () => {
               <p className="text-muted-foreground">No testimonials found matching your criteria</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTestimonials.map((testimonial: any) => (
-                <Link key={testimonial.id} to={`/testimonials/${testimonial.id}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="p-6 flex flex-col gap-4">
-                      <div className="flex items-start gap-3">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={testimonial.reviewer_avatar} />
-                          <AvatarFallback>{testimonial.customer_name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">{testimonial.customer_name}</h3>
-                          {testimonial.job_title && (
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <Briefcase className="h-3 w-3" />
-                              <span className="truncate">{testimonial.job_title}</span>
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Building2 className="h-3 w-3" />
-                            <span className="truncate">{testimonial.company}</span>
-                          </div>
-                        </div>
-                      </div>
-                      {testimonial.rating && (
-                        <div className="flex items-center gap-2">
-                          {renderStars(testimonial.rating)}
-                          <span className="text-sm font-medium">{testimonial.rating}/5</span>
-                        </div>
-                      )}
-                      <h4 className="font-semibold text-foreground line-clamp-2">{testimonial.title}</h4>
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {testimonial.review_data?.love || testimonial.content}
-                      </p>
-                      <div className="flex items-center justify-between pt-4 border-t">
-                        <div className="flex gap-2 flex-wrap">
-                          <Badge variant="secondary" className="text-xs">{getTypeLabel(testimonial.evidence_type)}</Badge>
-                          <Badge variant="outline" className="text-xs capitalize">{testimonial.product}</Badge>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(testimonial.created_at), "MMM yyyy")}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+            <MasonryGrid>
+              {filteredTestimonials.map((testimonial: any, i: number) => (
+                <TestimonialCard key={testimonial.id} testimonial={testimonial} index={i} />
               ))}
-            </div>
+            </MasonryGrid>
           )}
         </div>
       </div>
