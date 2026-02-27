@@ -5,11 +5,19 @@
 /** Extract only the positive "What do you like best" section from G2-formatted reviews */
 export function extractPositiveContent(content: string): string {
   // Try to match G2 format: text between "like best" header and "dislike" header
+  // G2 format
   const likeMatch = content.match(
     /\*?\*?What do you like best[^?]*\?\*?\*?\s*([\s\S]*?)(?:\*?\*?What do you dislike|$)/i
   );
   if (likeMatch && likeMatch[1].trim().length > 10) {
     return cleanMarkdown(likeMatch[1].trim());
+  }
+  // Gartner format
+  const gartnerLikeMatch = content.match(
+    /(?:What do you like most|Likes?|Pros?)[:\s]*([\s\S]*?)(?=What (?:do you )?(?:dislike|needs? improvement)|Cons?:|Dislikes?:|$)/i
+  );
+  if (gartnerLikeMatch && gartnerLikeMatch[1].trim().length > 10) {
+    return cleanMarkdown(gartnerLikeMatch[1].trim());
   }
   // Fallback: just clean markdown
   return cleanMarkdown(content);

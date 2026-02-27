@@ -2,3 +2,6 @@ project_id = "ecfavbwanepcxogzxaea"
 
 [functions.resolve-g2-product]
 verify_jwt = false
+
+[functions.import-gartner-reviews]
+verify_jwt = false

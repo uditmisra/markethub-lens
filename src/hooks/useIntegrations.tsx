@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-export type IntegrationType = "g2" | "capterra";
+export type IntegrationType = "g2" | "capterra" | "gartner";
 export type SyncStatus = "pending" | "running" | "completed" | "failed";
 
 export interface Integration {
@@ -208,6 +208,10 @@ export const useIntegrations = () => {
       const integration = integrations.find((i) => i.id === integrationId);
       if (!integration) throw new Error("Integration not found");
 
+      if (integration.integration_type === "gartner") {
+        throw new Error("Use importGartnerReviews to import Gartner reviews");
+      }
+
       const functionName = integration.integration_type === "g2" 
         ? "sync-g2-reviews" 
         : "sync-capterra-reviews";
@@ -236,6 +240,32 @@ export const useIntegrations = () => {
     },
   });
 
+  const importGartnerReviews = useMutation({
+    mutationFn: async ({ integrationId, reviews }: { integrationId: string; reviews: any[] }) => {
+      const { data, error } = await supabase.functions.invoke("import-gartner-reviews", {
+        body: { integrationId, reviews },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["integrations"] });
+      queryClient.invalidateQueries({ queryKey: ["evidence"] });
+      toast({
+        title: "Success",
+        description: "Gartner reviews imported successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to import Gartner reviews: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     integrations,
     isLoading,
@@ -243,5 +273,6 @@ export const useIntegrations = () => {
     updateIntegration,
     deleteIntegration,
     triggerSync,
+    importGartnerReviews,
   };
 };
