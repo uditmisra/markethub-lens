@@ -217,7 +217,7 @@ export type Database = {
       app_role: "admin" | "reviewer" | "submitter"
       evidence_status: "pending" | "approved" | "published" | "archived"
       evidence_type: "testimonial" | "case-study" | "review" | "quote" | "video"
-      integration_type: "g2" | "capterra"
+      integration_type: "g2" | "capterra" | "gartner"
       product_type: "platform" | "analytics" | "integration" | "api" | "other"
       sync_status: "pending" | "running" | "completed" | "failed"
     }
@@ -350,7 +350,7 @@ export const Constants = {
       app_role: ["admin", "reviewer", "submitter"],
       evidence_status: ["pending", "approved", "published", "archived"],
       evidence_type: ["testimonial", "case-study", "review", "quote", "video"],
-      integration_type: ["g2", "capterra"],
+      integration_type: ["g2", "capterra", "gartner"],
       product_type: ["platform", "analytics", "integration", "api", "other"],
       sync_status: ["pending", "running", "completed", "failed"],
     },
