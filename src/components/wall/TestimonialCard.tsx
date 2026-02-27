@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, Building2, Briefcase, Calendar } from "lucide-react";
+import { Star, User } from "lucide-react";
 import { format } from "date-fns";
+import { extractPositiveContent, truncate } from "@/utils/parseReviewContent";
 
 interface TestimonialCardProps {
   testimonial: any;
@@ -20,6 +21,9 @@ const getTypeLabel = (type: string) => {
   return labels[type] || type;
 };
 
+const isPlaceholder = (val: string | null | undefined) =>
+  !val || val === "Not specified" || val === "Anonymous" || val === "N/A";
+
 const TestimonialCard = ({ testimonial, index }: TestimonialCardProps) => {
   const rating = testimonial.rating;
   const borderColor =
@@ -29,7 +33,11 @@ const TestimonialCard = ({ testimonial, index }: TestimonialCardProps) => {
         ? "border-l-primary"
         : "border-l-secondary";
 
-  const displayContent = testimonial.review_data?.love || testimonial.content;
+  const rawContent = testimonial.review_data?.love || testimonial.content;
+  const displayContent = truncate(extractPositiveContent(rawContent), 250);
+  const customerName = isPlaceholder(testimonial.customer_name) ? null : testimonial.customer_name;
+  const jobTitle = isPlaceholder(testimonial.job_title) ? null : testimonial.job_title;
+  const company = isPlaceholder(testimonial.company) ? null : testimonial.company;
 
   return (
     <Link
@@ -67,21 +75,23 @@ const TestimonialCard = ({ testimonial, index }: TestimonialCardProps) => {
           <Avatar className="h-9 w-9">
             <AvatarImage src={testimonial.reviewer_avatar} />
             <AvatarFallback className="text-xs bg-primary/10 text-primary">
-              {testimonial.customer_name.charAt(0)}
+              {customerName ? customerName.charAt(0) : <User className="h-4 w-4" />}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">
-              {testimonial.customer_name}
-            </p>
+            {customerName && (
+              <p className="text-sm font-semibold text-foreground truncate">
+                {customerName}
+              </p>
+            )}
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              {testimonial.job_title && (
+              {jobTitle && (
                 <>
-                  <span className="truncate">{testimonial.job_title}</span>
-                  <span>·</span>
+                  <span className="truncate">{jobTitle}</span>
+                  {company && <span>·</span>}
                 </>
               )}
-              <span className="truncate">{testimonial.company}</span>
+              {company && <span className="truncate">{company}</span>}
             </div>
           </div>
         </div>

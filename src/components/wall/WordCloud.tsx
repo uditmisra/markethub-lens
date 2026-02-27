@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { extractPositiveContent } from "@/utils/parseReviewContent";
 
 const STOP_WORDS = new Set([
   "the","be","to","of","and","a","in","that","have","i","it","for","not","on","with","he","as","you","do",
@@ -10,6 +11,10 @@ const STOP_WORDS = new Set([
   "day","most","us","very","been","has","was","are","is","were","had","did","does","the","really","much",
   "more","great","best","love","using","used","product","been","would","it's","i'm","we've","they're",
   "don't","can't","didn't","won't","i've","that's","what's","here's","there's","let's","he's","she's",
+  // G2 prompt words & brand names
+  "dislike","products","review","reviews","recommend","recommendations","problems","solving",
+  "spotdraft","platform","tool","tools","software","feature","features","able","need","help",
+  "every","everything","thing","things","many","being","still","found","always","going","before",
 ]);
 
 const PALETTE = [
@@ -31,7 +36,8 @@ const WordCloud = ({ testimonials }: WordCloudProps) => {
   const words = useMemo(() => {
     const freq: Record<string, number> = {};
     testimonials.forEach((t) => {
-      const text = `${t.title} ${t.content} ${t.review_data?.love || ""}`;
+      const raw = `${t.title} ${t.content} ${t.review_data?.love || ""}`;
+      const text = extractPositiveContent(raw);
       text
         .toLowerCase()
         .replace(/[^a-z\s]/g, "")
