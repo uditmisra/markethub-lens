@@ -1,54 +1,64 @@
 
 
-## Fix Wall of Love -- Content Parsing and Visual Polish
+## Add Gartner Peer Insights Import (Free -- CSV/Paste Upload)
 
-### Problems Identified
+### Approach
 
-1. **"Dislike" in Word Cloud**: The G2 reviews contain the repeated prompt text `**What do you dislike about the product?**` and `**What do you like best about the product?**`. The word cloud extracts "dislike" as a top keyword because it appears in every review.
+Instead of paying for a scraping service, we'll add a **manual import** flow for Gartner reviews. Gartner Peer Insights lets authenticated users browse and copy their product's reviews. The admin can either:
 
-2. **Raw Markdown in Cards**: The testimonial cards display raw markdown (`**What do you like best...**`) instead of clean text. The `review_data` field is `null` for these imported reviews, so the card falls back to showing the full raw `content`.
+1. **Paste reviews** directly into a text area (copy from the Gartner page)
+2. **Upload a CSV** file with columns like reviewer name, company, rating, review text, date
 
-3. **Visual issues**: Cards all say "Anonymous" / "Not specified" which looks repetitive and unimpressive. The content is too long on some cards, making the masonry layout feel unbalanced.
+A backend function parses the pasted/uploaded data and imports it into the evidence table, following the exact same pattern as G2/Capterra imports.
 
----
+### Changes
 
-### Plan
+#### 1. Database Migration
+- Add `'gartner'` to the `integration_type` enum so Gartner can be stored alongside G2 and Capterra integrations.
 
-#### 1. Add a content-cleaning utility (`src/utils/parseReviewContent.ts`)
+#### 2. New Backend Function: `supabase/functions/import-gartner-reviews/index.ts`
+- Accepts a JSON body with an array of reviews (parsed on the frontend from CSV or structured paste)
+- Each review has: `reviewer_name`, `company`, `job_title`, `rating`, `title`, `content`, `date`
+- Inserts into the `evidence` table with `integration_source: 'gartner'`, deduplicating by a hash-based `external_id`
+- Updates the integration's sync status/metrics just like the G2 function does
 
-Create a helper function that:
-- Extracts just the "What do you like best" answer from G2-formatted reviews (the positive section only)
-- Strips markdown bold markers (`**`)
-- Falls back to full content if no G2 structure is detected
-- Truncates to ~300 characters with ellipsis for card display
+#### 3. Frontend: Update `src/pages/Integrations.tsx`
+- Add `Gartner Peer Insights` to the integration type dropdown
+- When `gartner` is selected, hide the API Key and Product ID fields
+- Instead, show a dedicated "Import Reviews" section with:
+  - A **text area** where the admin can paste Gartner reviews (we'll parse the structured text)
+  - A **CSV upload** button as an alternative
+  - A help note: "Copy reviews from your Gartner Peer Insights product page and paste them here, or upload a CSV"
 
-#### 2. Fix the Word Cloud (`src/components/wall/WordCloud.tsx`)
+#### 4. New Utility: `src/utils/parseGartnerReviews.ts`
+- `parseGartnerPaste(text: string)`: Parses pasted Gartner review text into structured review objects. Gartner reviews follow a repeating pattern (reviewer name, rating, date, review text sections) that can be regex-matched.
+- `parseGartnerCSV(csvText: string)`: Parses a CSV with headers like `Name, Company, Rating, Title, Review, Date` into the same structure.
+- Both return an array of `{ reviewer_name, company, job_title, rating, title, content, date }`.
 
-- Add G2 prompt phrases to the stop-word filter: "dislike", "product", "best", "like" (already there but "dislike" is missing)
-- Before extracting words, run the same content-cleaning utility to only analyze the positive section of reviews
-- Add more common filler words: "also", "well", "really", "much", "very" etc. (some are already there but double-check)
+#### 5. Update `src/hooks/useIntegrations.tsx`
+- Add `"gartner"` to the `IntegrationType` union
+- In `triggerSync`, add a `gartner` case that calls `import-gartner-reviews`
+- Add a new `importGartnerReviews` mutation that accepts parsed review data and calls the edge function
 
-#### 3. Fix TestimonialCard display (`src/components/wall/TestimonialCard.tsx`)
+#### 6. Update `src/utils/parseReviewContent.ts`
+- Add Gartner-specific content cleaning: strip headers like "What do you like most?" and "What needs improvement?" so the Wall of Love shows clean content
 
-- Use the content-cleaning utility to show only the positive excerpt
-- Cap displayed text at ~250 chars with "..." to keep cards balanced
-- Hide "Not specified" for job titles -- just show company name if job title is missing or "Not specified"
-- Hide "Anonymous" avatar fallback text when the name is literally "Anonymous" -- show a generic icon instead
+#### 7. Update `supabase/config.toml`
+- Register `[functions.import-gartner-reviews]` with `verify_jwt = false`
 
-#### 4. Minor visual improvements
+### How It Works for the Admin
 
-- Give the StatsHero a slightly more refined gradient (the current bright blue feels flat)
-- Ensure the word cloud filters out brand names like "spotdraft" which are meaningless to visitors
+1. Go to Integrations, click "Add Integration", select "Gartner Peer Insights"
+2. The dialog shows a text area and CSV upload option (no API key needed)
+3. Admin copies reviews from their Gartner product page and pastes them, or uploads a CSV export
+4. Click "Import" -- the frontend parses the data and sends it to the backend function
+5. Reviews appear in the evidence table, ready for review/publishing
+6. The integration card shows import stats (imported, skipped duplicates, etc.)
 
-### Technical Details
+### Why This Is Free
 
-**New file:** `src/utils/parseReviewContent.ts`
-- `extractPositiveContent(content: string): string` -- regex to grab text between "like best" and "dislike" headers
-- `cleanMarkdown(text: string): string` -- strip `**` markers
-- `truncate(text: string, max: number): string`
-
-**Modified files:**
-- `src/components/wall/WordCloud.tsx` -- use `extractPositiveContent` before word extraction; add "dislike", "spotdraft", "product" to stop words
-- `src/components/wall/TestimonialCard.tsx` -- use cleaned content; hide empty/placeholder metadata
-- `src/components/wall/StatsHero.tsx` -- tweak gradient colors for a warmer, more polished look
+- No Firecrawl subscription needed
+- No external API keys required
+- The admin manually provides the data from Gartner (which they already have access to)
+- The parsing/import logic runs entirely on your existing backend
 
