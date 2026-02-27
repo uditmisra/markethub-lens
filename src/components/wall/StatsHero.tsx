@@ -38,7 +38,7 @@ const FloatingParticle = ({ delay, icon: Icon, className }: { delay: number; ico
 
 const StatsHero = ({ totalCount, averageRating }: StatsHeroProps) => {
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-secondary p-8 md:p-12 text-primary-foreground mb-10">
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/95 via-primary/80 to-accent/60 p-8 md:p-12 text-primary-foreground mb-10">
       {/* Floating particles */}
       <FloatingParticle delay={0} icon={Heart} className="top-6 left-[10%] text-primary-foreground/30" />
       <FloatingParticle delay={1.2} icon={Sparkles} className="top-12 right-[15%] text-primary-foreground/20" />
