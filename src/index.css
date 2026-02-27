@@ -130,3 +130,18 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-18px) scale(1.15);
+    opacity: 0.3;
+  }
+}
+
+.animate-float-particle {
+  animation: float-particle 4s ease-in-out infinite;
+}
