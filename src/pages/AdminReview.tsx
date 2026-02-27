@@ -171,18 +171,37 @@ export default function AdminReview() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Filter by Status</span>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as EvidenceStatus | "all")}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-4">
+                <span>Filter by Status</span>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as EvidenceStatus | "all")}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {(() => {
+                const pendingItems = evidence.filter(e => e.status === "pending");
+                if (pendingItems.length === 0) return null;
+                return (
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedIds(pendingItems.map(e => e.id));
+                      openBulkActionDialog("publish");
+                    }}
+                    className="gap-2"
+                  >
+                    <Globe className="h-4 w-4" />
+                    Publish All Pending ({pendingItems.length})
+                  </Button>
+                );
+              })()}
             </CardTitle>
           </CardHeader>
         </Card>
