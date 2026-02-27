@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Star, Building2, Briefcase, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, Building2, Briefcase, Calendar, Heart } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import SocialMeta from "@/components/SocialMeta";
@@ -46,63 +47,46 @@ const Testimonials = () => {
     return matchesSearch && matchesProduct && matchesType && matchesRating;
   });
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`h-4 w-4 ${
-              i < rating ? "fill-yellow-400 text-yellow-400" : "text-muted"
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <div className="flex gap-1">
+      {[...Array(5)].map((_, i) => (
+        <Star key={i} className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-muted"}`} />
+      ))}
+    </div>
+  );
 
   const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      "testimonial": "Testimonial",
-      "case-study": "Case Study",
-      "review": "Review",
-      "quote": "Quote",
-      "video": "Video",
-    };
+    const labels: Record<string, string> = { "testimonial": "Testimonial", "case-study": "Case Study", "review": "Review", "quote": "Quote", "video": "Video" };
     return labels[type] || type;
   };
 
   return (
     <div className="min-h-screen bg-background">
       <SocialMeta 
-        title="Customer Testimonials - Wall of Love"
-        description="Discover what our customers have to say about their experience with our products and services."
+        title="Wall of Love — Customer Testimonials"
+        description="Discover what our customers have to say about their experience."
         url={window.location.href}
       />
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+              <Heart className="h-4 w-4" />
+              Wall of Love
+            </div>
             <h1 className="text-4xl font-bold text-foreground mb-4">
-              Customer Testimonials
+              What Our Customers Say
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              See what our customers are saying about their experience
+              Real stories from real people who use our products every day.
             </p>
           </div>
 
           <div className="bg-card rounded-lg border p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Input
-                placeholder="Search testimonials..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="md:col-span-1"
-              />
-              
+              <Input placeholder="Search testimonials..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="md:col-span-1" />
               <Select value={productFilter} onValueChange={setProductFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Products" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Products" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Products</SelectItem>
                   <SelectItem value="platform">Platform</SelectItem>
@@ -112,11 +96,8 @@ const Testimonials = () => {
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
-
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Types" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="testimonial">Testimonials</SelectItem>
@@ -125,11 +106,8 @@ const Testimonials = () => {
                   <SelectItem value="quote">Quotes</SelectItem>
                 </SelectContent>
               </Select>
-
               <Select value={ratingFilter} onValueChange={setRatingFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Ratings" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Ratings" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Ratings</SelectItem>
                   <SelectItem value="5">5 Stars</SelectItem>
@@ -163,14 +141,10 @@ const Testimonials = () => {
                       <div className="flex items-start gap-3">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={testimonial.reviewer_avatar} />
-                          <AvatarFallback>
-                            {testimonial.customer_name.charAt(0)}
-                          </AvatarFallback>
+                          <AvatarFallback>{testimonial.customer_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground truncate">
-                            {testimonial.customer_name}
-                          </h3>
+                          <h3 className="font-semibold text-foreground truncate">{testimonial.customer_name}</h3>
                           {testimonial.job_title && (
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <Briefcase className="h-3 w-3" />
@@ -183,30 +157,20 @@ const Testimonials = () => {
                           </div>
                         </div>
                       </div>
-
                       {testimonial.rating && (
                         <div className="flex items-center gap-2">
                           {renderStars(testimonial.rating)}
                           <span className="text-sm font-medium">{testimonial.rating}/5</span>
                         </div>
                       )}
-
-                      <h4 className="font-semibold text-foreground line-clamp-2">
-                        {testimonial.title}
-                      </h4>
-
+                      <h4 className="font-semibold text-foreground line-clamp-2">{testimonial.title}</h4>
                       <p className="text-sm text-muted-foreground line-clamp-3">
                         {testimonial.review_data?.love || testimonial.content}
                       </p>
-
                       <div className="flex items-center justify-between pt-4 border-t">
                         <div className="flex gap-2 flex-wrap">
-                          <Badge variant="secondary" className="text-xs">
-                            {getTypeLabel(testimonial.evidence_type)}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {testimonial.product}
-                          </Badge>
+                          <Badge variant="secondary" className="text-xs">{getTypeLabel(testimonial.evidence_type)}</Badge>
+                          <Badge variant="outline" className="text-xs capitalize">{testimonial.product}</Badge>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />

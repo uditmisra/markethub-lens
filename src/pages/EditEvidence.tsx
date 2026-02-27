@@ -105,9 +105,9 @@ const EditEvidence = () => {
         <Header />
         <div className="container mx-auto px-4 py-12">
           <Card className="p-12 text-center">
-            <h2 className="text-2xl font-bold mb-2">Evidence Not Found</h2>
-            <p className="text-muted-foreground mb-6">The evidence you're trying to edit doesn't exist.</p>
-            <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+            <h2 className="text-2xl font-bold mb-2">Testimonial Not Found</h2>
+            <p className="text-muted-foreground mb-6">The testimonial you're trying to edit doesn't exist.</p>
+            <Button onClick={() => navigate("/dashboard")}>Back to Library</Button>
           </Card>
         </div>
       </div>
@@ -125,14 +125,14 @@ const EditEvidence = () => {
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Evidence
+          Back to Testimonial
         </Button>
 
         <div className="max-w-3xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-2 text-foreground">Edit Evidence</h1>
+            <h1 className="text-4xl font-bold mb-2 text-foreground">Edit Testimonial</h1>
             <p className="text-muted-foreground">
-              Update customer testimonial details and information.
+              Update testimonial details and information.
             </p>
           </div>
 
@@ -188,7 +188,7 @@ const EditEvidence = () => {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="evidenceType">Evidence Type *</Label>
+                  <Label htmlFor="evidenceType">Feedback Type *</Label>
                   <Select 
                     required
                     value={formData.evidenceType}
@@ -202,7 +202,7 @@ const EditEvidence = () => {
                       <SelectItem value="case-study">Case Study</SelectItem>
                       <SelectItem value="review">Review</SelectItem>
                       <SelectItem value="quote">Quote</SelectItem>
-                      <SelectItem value="video">Video Testimonial</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -219,7 +219,7 @@ const EditEvidence = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="platform">Platform</SelectItem>
-                      <SelectItem value="analytics">Analytics Tool</SelectItem>
+                      <SelectItem value="analytics">Analytics</SelectItem>
                       <SelectItem value="integration">Integration</SelectItem>
                       <SelectItem value="api">API</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
@@ -239,8 +239,7 @@ const EditEvidence = () => {
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="pending">Pending Review</SelectItem>
                       <SelectItem value="published">Published</SelectItem>
                       <SelectItem value="archived">Archived</SelectItem>
                     </SelectContent>
@@ -249,7 +248,7 @@ const EditEvidence = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="title">Title/Headline *</Label>
+                <Label htmlFor="title">Headline *</Label>
                 <Input 
                   id="title" 
                   placeholder="e.g., Increased conversion rate by 45%" 
@@ -260,10 +259,10 @@ const EditEvidence = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="content">Full Testimonial/Story *</Label>
+                <Label htmlFor="content">Full Testimonial *</Label>
                 <Textarea 
                   id="content" 
-                  placeholder="Share the full customer testimonial, success story, or feedback..."
+                  placeholder="Share the full testimonial or success story..."
                   className="min-h-32"
                   required
                   value={formData.content}
@@ -275,7 +274,7 @@ const EditEvidence = () => {
                 <Label htmlFor="results">Key Results/Metrics</Label>
                 <Textarea 
                   id="results" 
-                  placeholder="e.g., 45% increase in conversions, $100K saved annually, 3x faster deployment"
+                  placeholder="e.g., 45% increase in conversions, $100K saved annually"
                   className="min-h-24"
                   value={formData.results}
                   onChange={(e) => setFormData({ ...formData, results: e.target.value })}
@@ -283,10 +282,10 @@ const EditEvidence = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="useCases">Use Cases/Applications</Label>
+                <Label htmlFor="useCases">Use Cases</Label>
                 <Input 
                   id="useCases" 
-                  placeholder="e.g., Lead generation, Customer onboarding, Sales enablement"
+                  placeholder="e.g., Lead generation, Customer onboarding"
                   value={formData.useCases}
                   onChange={(e) => setFormData({ ...formData, useCases: e.target.value })}
                 />

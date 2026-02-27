@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useEvidence } from "@/hooks/useEvidence";
 
@@ -17,9 +17,9 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="bg-gradient-hero p-2 rounded-lg transition-transform group-hover:scale-105">
-            <FileText className="h-6 w-6 text-primary-foreground" />
+            <Heart className="h-6 w-6 text-primary-foreground" />
           </div>
-          <span className="text-xl font-bold text-foreground">CustomerEvidence</span>
+          <span className="text-xl font-bold text-foreground">WallOfLove</span>
         </Link>
         
         <nav className="flex items-center gap-1">
@@ -33,19 +33,19 @@ export const Header = () => {
             variant={isActive("/testimonials") ? "secondary" : "ghost"}
             asChild
           >
-            <Link to="/testimonials">Testimonials</Link>
+            <Link to="/testimonials">Wall of Love</Link>
           </Button>
           <Button
             variant={isActive("/submit") ? "secondary" : "ghost"}
             asChild
           >
-            <Link to="/submit">Submit Evidence</Link>
+            <Link to="/submit">Share Feedback</Link>
           </Button>
           <Button
             variant={isActive("/dashboard") ? "secondary" : "ghost"}
             asChild
           >
-            <Link to="/dashboard">Dashboard</Link>
+            <Link to="/dashboard">Testimonial Library</Link>
           </Button>
           {canApprove && (
             <Button
@@ -54,7 +54,7 @@ export const Header = () => {
               className="relative"
             >
               <Link to="/admin/review">
-                Review
+                Pending Review
                 {pendingCount > 0 && (
                   <Badge 
                     variant="destructive" 
@@ -72,13 +72,13 @@ export const Header = () => {
                 variant={isActive("/integrations") ? "secondary" : "ghost"}
                 asChild
               >
-                <Link to="/integrations">Integrations</Link>
+                <Link to="/integrations">Connections</Link>
               </Button>
               <Button
                 variant={isActive("/widgets") ? "secondary" : "ghost"}
                 asChild
               >
-                <Link to="/widgets">Widgets</Link>
+                <Link to="/widgets">Embed</Link>
               </Button>
             </>
           )}

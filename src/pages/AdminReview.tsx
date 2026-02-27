@@ -13,7 +13,7 @@ import { useEvidence } from "@/hooks/useEvidence";
 import { useUserRole } from "@/hooks/useUserRole";
 import { EvidenceStatus } from "@/types/evidence";
 import { toast } from "sonner";
-import { Eye, CheckCircle, XCircle, Archive, Trash2, Copy, ExternalLink, Share2 } from "lucide-react";
+import { Eye, CheckCircle, Archive, Trash2, Copy, ExternalLink, Share2, Globe } from "lucide-react";
 
 export default function AdminReview() {
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ export default function AdminReview() {
   const [actionDialog, setActionDialog] = useState<{
     open: boolean;
     evidenceId: string;
-    action: "approve" | "publish" | "reject" | null;
+    action: "publish" | "archive" | null;
     title: string;
   }>({
     open: false,
@@ -34,7 +34,7 @@ export default function AdminReview() {
   });
   const [bulkActionDialog, setBulkActionDialog] = useState<{
     open: boolean;
-    action: "approve" | "publish" | "reject" | "delete" | null;
+    action: "publish" | "archive" | "delete" | null;
   }>({
     open: false,
     action: null,
@@ -49,7 +49,6 @@ export default function AdminReview() {
     title: "",
   });
 
-  // Redirect if not authorized
   if (!roleLoading && !canApprove) {
     navigate("/dashboard");
     return null;
@@ -73,7 +72,6 @@ export default function AdminReview() {
         updates: { status: newStatus },
       });
       
-      // Show success dialog for publish action
       if (newStatus === "published") {
         setPublishSuccessDialog({
           open: true,
@@ -81,19 +79,19 @@ export default function AdminReview() {
           title: actionDialog.title,
         });
       } else {
-        toast.success(`Evidence ${newStatus} successfully`);
+        toast.success(`Testimonial ${newStatus} successfully`);
       }
       
       setActionDialog({ open: false, evidenceId: "", action: null, title: "" });
     } catch (error) {
-      toast.error(`Failed to ${actionDialog.action} evidence`);
+      toast.error(`Failed to ${actionDialog.action} testimonial`);
     }
   };
 
   const copyPublicLink = (id: string) => {
     const url = `${window.location.origin}/testimonials/${id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Public link copied to clipboard!");
+    toast.success("Public link copied!");
   };
 
   const shareToTwitter = (id: string, title: string) => {
@@ -115,9 +113,8 @@ export default function AdminReview() {
         await bulkDeleteEvidence.mutateAsync(selectedIds);
       } else {
         const statusMap = {
-          approve: "approved" as EvidenceStatus,
           publish: "published" as EvidenceStatus,
-          reject: "archived" as EvidenceStatus,
+          archive: "archived" as EvidenceStatus,
         };
         const newStatus = statusMap[bulkActionDialog.action!];
         await bulkUpdateEvidence.mutateAsync({ ids: selectedIds, status: newStatus });
@@ -129,11 +126,11 @@ export default function AdminReview() {
     }
   };
 
-  const openActionDialog = (id: string, action: "approve" | "publish" | "reject", title: string) => {
+  const openActionDialog = (id: string, action: "publish" | "archive", title: string) => {
     setActionDialog({ open: true, evidenceId: id, action, title });
   };
 
-  const openBulkActionDialog = (action: "approve" | "publish" | "reject" | "delete") => {
+  const openBulkActionDialog = (action: "publish" | "archive" | "delete") => {
     setBulkActionDialog({ open: true, action });
   };
 
@@ -167,8 +164,8 @@ export default function AdminReview() {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-foreground">Evidence Review</h1>
-          <p className="text-muted-foreground">Review and manage evidence submissions</p>
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Pending Review</h1>
+          <p className="text-muted-foreground">Review submissions and publish them to your Wall of Love</p>
         </div>
 
         <Card className="mb-6">
@@ -180,9 +177,8 @@ export default function AdminReview() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Evidence</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
@@ -205,29 +201,20 @@ export default function AdminReview() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openBulkActionDialog("approve")}
-                    className="gap-2"
-                  >
-                    <CheckCircle className="h-4 w-4" />
-                    Approve Selected
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
                     onClick={() => openBulkActionDialog("publish")}
                     className="gap-2"
                   >
-                    <CheckCircle className="h-4 w-4" />
+                    <Globe className="h-4 w-4" />
                     Publish Selected
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => openBulkActionDialog("reject")}
+                    onClick={() => openBulkActionDialog("archive")}
                     className="gap-2"
                   >
                     <Archive className="h-4 w-4" />
-                    Reject Selected
+                    Archive Selected
                   </Button>
                   <Button
                     variant="destructive"
@@ -248,7 +235,7 @@ export default function AdminReview() {
           <CardContent className="p-0">
             {filteredEvidence.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                No evidence found for this status
+                No testimonials found for this status
               </div>
             ) : (
               <Table>
@@ -317,18 +304,7 @@ export default function AdminReview() {
                             <Eye className="h-4 w-4" />
                             View
                           </Button>
-                          {item.status === "pending" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openActionDialog(item.id, "approve", item.title)}
-                              className="gap-2 text-blue-500 hover:text-blue-600"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                              Approve
-                            </Button>
-                          )}
-                          {item.status === "approved" && (
+                          {item.status !== "published" && item.status !== "archived" && (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -339,15 +315,17 @@ export default function AdminReview() {
                               Publish
                             </Button>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openActionDialog(item.id, "reject", item.title)}
-                            className="gap-2 text-red-500 hover:text-red-600"
-                          >
-                            <XCircle className="h-4 w-4" />
-                            Reject
-                          </Button>
+                          {item.status !== "archived" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openActionDialog(item.id, "archive", item.title)}
+                              className="gap-2 text-muted-foreground hover:text-foreground"
+                            >
+                              <Archive className="h-4 w-4" />
+                              Archive
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -363,13 +341,12 @@ export default function AdminReview() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {actionDialog.action === "approve" && "Approve Evidence"}
-              {actionDialog.action === "publish" && "Publish Evidence"}
-              {actionDialog.action === "reject" && "Reject Evidence"}
+              {actionDialog.action === "publish" && "Publish Testimonial"}
+              {actionDialog.action === "archive" && "Archive Testimonial"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to {actionDialog.action} "{actionDialog.title}"?
-              {actionDialog.action === "reject" && " This will archive the evidence."}
+              {actionDialog.action === "publish" && `Publish "${actionDialog.title}"? It will appear on your public Wall of Love.`}
+              {actionDialog.action === "archive" && `Archive "${actionDialog.title}"? It will be hidden from public view but can be unarchived later.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -377,14 +354,13 @@ export default function AdminReview() {
             <AlertDialogAction
               onClick={() => {
                 const statusMap = {
-                  approve: "approved" as EvidenceStatus,
                   publish: "published" as EvidenceStatus,
-                  reject: "archived" as EvidenceStatus,
+                  archive: "archived" as EvidenceStatus,
                 };
                 handleStatusChange(statusMap[actionDialog.action!]);
               }}
             >
-              Confirm
+              {actionDialog.action === "publish" ? "Publish" : "Archive"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -394,15 +370,13 @@ export default function AdminReview() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {bulkActionDialog.action === "approve" && "Approve Selected Evidence"}
-              {bulkActionDialog.action === "publish" && "Publish Selected Evidence"}
-              {bulkActionDialog.action === "reject" && "Reject Selected Evidence"}
-              {bulkActionDialog.action === "delete" && "Delete Selected Evidence"}
+              {bulkActionDialog.action === "publish" && "Publish Selected Testimonials"}
+              {bulkActionDialog.action === "archive" && "Archive Selected Testimonials"}
+              {bulkActionDialog.action === "delete" && "Delete Selected Testimonials"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to {bulkActionDialog.action} {selectedIds.length} item(s)?
               {bulkActionDialog.action === "delete" && " This action cannot be undone."}
-              {bulkActionDialog.action === "reject" && " This will archive the selected evidence."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -420,10 +394,10 @@ export default function AdminReview() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              Successfully Published!
+              Published!
             </DialogTitle>
             <DialogDescription>
-              "{publishSuccessDialog.title}" is now live and visible on your public testimonials page.
+              "{publishSuccessDialog.title}" is now live on your Wall of Love.
             </DialogDescription>
           </DialogHeader>
           
@@ -436,20 +410,11 @@ export default function AdminReview() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                onClick={() => copyPublicLink(publishSuccessDialog.evidenceId)}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={() => copyPublicLink(publishSuccessDialog.evidenceId)} className="w-full">
                 <Copy className="h-4 w-4 mr-2" />
                 Copy Link
               </Button>
-              
-              <Button
-                variant="outline"
-                onClick={() => window.open(`/testimonials/${publishSuccessDialog.evidenceId}`, '_blank')}
-                className="w-full"
-              >
+              <Button variant="outline" onClick={() => window.open(`/testimonials/${publishSuccessDialog.evidenceId}`, '_blank')} className="w-full">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View Public Page
               </Button>
@@ -458,21 +423,11 @@ export default function AdminReview() {
             <div className="border-t pt-4">
               <p className="text-sm font-medium mb-2">Share:</p>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => shareToTwitter(publishSuccessDialog.evidenceId, publishSuccessDialog.title)}
-                  className="flex-1"
-                >
+                <Button variant="outline" size="sm" onClick={() => shareToTwitter(publishSuccessDialog.evidenceId, publishSuccessDialog.title)} className="flex-1">
                   <Share2 className="h-4 w-4 mr-2" />
                   Twitter
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => shareToLinkedIn(publishSuccessDialog.evidenceId)}
-                  className="flex-1"
-                >
+                <Button variant="outline" size="sm" onClick={() => shareToLinkedIn(publishSuccessDialog.evidenceId)} className="flex-1">
                   <Share2 className="h-4 w-4 mr-2" />
                   LinkedIn
                 </Button>
