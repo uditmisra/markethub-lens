@@ -94,8 +94,8 @@ export const useEvidence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["evidence"] });
       toast({
-        title: "Success!",
-        description: "Evidence submitted successfully.",
+        title: "Thank you!",
+        description: "Your testimonial has been submitted.",
       });
     },
     onError: (error: any) => {
@@ -135,8 +135,8 @@ export const useEvidence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["evidence"] });
       toast({
-        title: "Success!",
-        description: "Evidence updated successfully.",
+        title: "Updated",
+        description: "Testimonial updated successfully.",
       });
     },
     onError: (error: any) => {
@@ -160,8 +160,8 @@ export const useEvidence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["evidence"] });
       toast({
-        title: "Success!",
-        description: "Evidence deleted successfully.",
+        title: "Deleted",
+        description: "Testimonial deleted.",
       });
     },
     onError: (error: any) => {
@@ -185,8 +185,8 @@ export const useEvidence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["evidence"] });
       toast({
-        title: "Success!",
-        description: "Evidence archived successfully.",
+        title: "Archived",
+        description: "Testimonial archived.",
       });
     },
     onError: (error: any) => {

@@ -23,6 +23,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const statusLabels: Record<string, string> = {
+  pending: "Pending Review",
+  approved: "Published",
+  published: "Published",
+  archived: "Archived",
+};
+
 const EvidenceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -94,9 +101,9 @@ const EvidenceDetail = () => {
         <div className="container mx-auto px-4 py-12">
           <Card className="p-12 text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2 text-card-foreground">Evidence Not Found</h2>
-            <p className="text-muted-foreground mb-6">The evidence you're looking for doesn't exist.</p>
-            <Button onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+            <h2 className="text-2xl font-bold mb-2 text-card-foreground">Testimonial Not Found</h2>
+            <p className="text-muted-foreground mb-6">The testimonial you're looking for doesn't exist.</p>
+            <Button onClick={() => navigate("/dashboard")}>Back to Library</Button>
           </Card>
         </div>
       </div>
@@ -129,7 +136,7 @@ const EvidenceDetail = () => {
           className="mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Dashboard
+          Back to Library
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -141,7 +148,7 @@ const EvidenceDetail = () => {
                   {typeLabels[evidence.evidenceType]}
                 </Badge>
                 <Badge variant="outline" className={`text-sm ${statusColors[evidence.status]}`}>
-                  {evidence.status}
+                  {statusLabels[evidence.status] || evidence.status}
                 </Badge>
                 <Badge variant="secondary" className="text-sm ml-auto">
                   {evidence.product}
@@ -223,12 +230,10 @@ const EvidenceDetail = () => {
                 <div className="flex items-center gap-3">
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Created</p>
+                    <p className="text-sm text-muted-foreground">Submitted</p>
                     <p className="font-medium text-card-foreground">
                       {new Date(evidence.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                        year: 'numeric', month: 'long', day: 'numeric' 
                       })}
                     </p>
                   </div>
@@ -240,9 +245,7 @@ const EvidenceDetail = () => {
                     <p className="text-sm text-muted-foreground">Last Updated</p>
                     <p className="font-medium text-card-foreground">
                       {new Date(evidence.updatedAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                        year: 'numeric', month: 'long', day: 'numeric' 
                       })}
                     </p>
                   </div>
@@ -260,7 +263,7 @@ const EvidenceDetail = () => {
                     onClick={() => navigate(`/evidence/${id}/edit`)}
                   >
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit Evidence
+                    Edit
                   </Button>
                 )}
                 
@@ -274,9 +277,9 @@ const EvidenceDetail = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Archive Evidence</AlertDialogTitle>
+                        <AlertDialogTitle>Archive Testimonial</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to archive this evidence? It will no longer appear in active listings.
+                          This will hide the testimonial from public view. You can unarchive it later.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -297,9 +300,9 @@ const EvidenceDetail = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Evidence</AlertDialogTitle>
+                        <AlertDialogTitle>Delete Testimonial</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete this evidence? This action cannot be undone.
+                          This permanently removes the testimonial. This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

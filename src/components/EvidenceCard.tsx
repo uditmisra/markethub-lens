@@ -24,6 +24,20 @@ const statusColors = {
   archived: "bg-muted text-muted-foreground border-border"
 };
 
+const statusLabels: Record<string, string> = {
+  pending: "Pending Review",
+  approved: "Published",
+  published: "Published",
+  archived: "Archived",
+};
+
+const statusTooltips: Record<string, string> = {
+  pending: "Waiting for review — will appear on your Wall of Love once published",
+  approved: "Live on your public Wall of Love",
+  published: "Live on your public Wall of Love",
+  archived: "Hidden from public view — can be unarchived anytime",
+};
+
 const typeLabels = {
   testimonial: "Testimonial",
   "case-study": "Case Study",
@@ -41,7 +55,7 @@ export const EvidenceCard = ({ evidence, showQuickActions = false, onQuickPublis
     e.stopPropagation();
     const url = `${window.location.origin}/testimonials/${evidence.id}`;
     navigator.clipboard.writeText(url);
-    toast.success("Public link copied to clipboard!");
+    toast.success("Public link copied!");
   };
 
   const viewPublicPage = (e: React.MouseEvent) => {
@@ -127,15 +141,12 @@ export const EvidenceCard = ({ evidence, showQuickActions = false, onQuickPublis
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="outline" className={`text-xs ${statusColors[evidence.status]} cursor-help`}>
-                      {evidence.status}
+                      {statusLabels[evidence.status] || evidence.status}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="text-xs">
-                      {evidence.status === "pending" && "Waiting for admin/reviewer approval"}
-                      {evidence.status === "approved" && "Approved - ready to be published"}
-                      {evidence.status === "published" && "Live on public testimonials page"}
-                      {evidence.status === "archived" && "Not visible publicly"}
+                      {statusTooltips[evidence.status]}
                     </div>
                   </TooltipContent>
                 </Tooltip>
@@ -159,7 +170,6 @@ export const EvidenceCard = ({ evidence, showQuickActions = false, onQuickPublis
               )}
             </div>
             
-            {/* Rating */}
             {evidence.rating && (
               <div className="mb-2">
                 {renderStarRating(evidence.rating)}

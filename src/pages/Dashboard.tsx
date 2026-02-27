@@ -130,9 +130,9 @@ const Dashboard = () => {
         id,
         updates: { status: "published" as EvidenceStatus },
       });
-      toast.success("Evidence published successfully!");
+      toast.success("Testimonial published!");
     } catch (error) {
-      toast.error("Failed to publish evidence");
+      toast.error("Failed to publish testimonial");
     }
   };
 
@@ -145,7 +145,7 @@ const Dashboard = () => {
 
   const stats = [
     {
-      label: "Total Evidence",
+      label: "Total Testimonials",
       value: evidence.length,
       icon: FileText,
       color: "text-primary"
@@ -187,7 +187,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-4xl font-bold text-foreground">Evidence Dashboard</h1>
+              <h1 className="text-4xl font-bold text-foreground">Testimonial Library</h1>
               {(isAdmin || isReviewer) && (
                 <Badge variant="outline" className="text-sm">
                   <Shield className="h-3 w-3 mr-1" />
@@ -195,13 +195,13 @@ const Dashboard = () => {
                 </Badge>
               )}
             </div>
-            <p className="text-muted-foreground">Manage and organize all your customer evidence</p>
+            <p className="text-muted-foreground">Manage and organize all your testimonials</p>
           </div>
           <div className="flex gap-2">
             <Button asChild size="lg" className="shadow-medium">
               <Link to="/submit">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Evidence
+                Share Feedback
               </Link>
             </Button>
             <Button onClick={signOut} variant="outline" size="lg">
@@ -331,7 +331,7 @@ const Dashboard = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search evidence..."
+                placeholder="Search testimonials..."
                 value={searchTerm}
                 onChange={(e) => { setSearchTerm(e.target.value); setActivePreset(null); }}
                 className="pl-9"
@@ -359,7 +359,6 @@ const Dashboard = () => {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
                 <SelectItem value="published">Published</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
@@ -498,7 +497,7 @@ const Dashboard = () => {
 
           <div className="flex items-center justify-between pt-4 border-t">
             <p className="text-sm text-muted-foreground">
-              Showing {filteredEvidence.length} of {evidence.length} evidence items
+              Showing {filteredEvidence.length} of {evidence.length} testimonials
             </p>
             <div className="flex gap-2">
               <Button 
@@ -540,37 +539,37 @@ const Dashboard = () => {
             <Card className="p-12 text-center">
               <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-lg font-semibold mb-2 text-foreground">
-                {evidence.length === 0 ? 'No evidence yet' : 'No evidence found'}
+                {evidence.length === 0 ? 'No testimonials yet' : 'No testimonials found'}
               </h3>
               <p className="text-muted-foreground mb-4">
                 {evidence.length === 0 
-                  ? 'Get started by submitting evidence manually or setting up a review site integration.'
+                  ? 'Get started by sharing feedback or importing reviews from G2/Capterra.'
                   : searchTerm || filterType !== "all" || filterStatus !== "all" || filterProduct !== "all"
                   ? "Try adjusting your filters or search term"
-                  : "Start by adding your first piece of customer evidence"}
+                  : "Start by sharing your first testimonial"}
               </p>
               {evidence.length === 0 ? (
                 <div className="flex gap-3 justify-center">
                   <Button asChild>
                     <Link to="/submit">
                       <Plus className="h-4 w-4 mr-2" />
-                      Submit Evidence
+                      Share Feedback
                     </Link>
                   </Button>
                   {isAdmin && (
                     <Button variant="outline" asChild>
-                      <Link to="/integrations">
-                        Set Up Integration
+                    <Link to="/integrations">
+                        Set Up Connection
                       </Link>
                     </Button>
                   )}
                 </div>
               ) : (
                 <Button asChild>
-                  <Link to="/submit">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Evidence
-                  </Link>
+                    <Link to="/submit">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Share Feedback
+                    </Link>
                 </Button>
               )}
             </Card>
