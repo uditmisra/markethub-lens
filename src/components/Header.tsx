@@ -38,6 +38,10 @@ export const Header = () => {
             <Link to="/coverage">Coverage</Link>
           </Button>
 
+          <Button variant={isActive("/collect") ? "secondary" : "ghost"} asChild>
+            <Link to="/collect">Collect</Link>
+          </Button>
+
           {canApprove && (
             <Button
               variant={isActive("/admin/review") ? "secondary" : "ghost"}

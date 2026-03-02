@@ -83,6 +83,7 @@ export const useEvidence = () => {
             use_cases: newEvidence.useCases,
             created_by: user.id,
             file_url: newEvidence.fileUrl,
+            campaign_id: (newEvidence as any).campaignId ?? null,
           },
         ])
         .select()

@@ -12,6 +12,7 @@ import { useTags } from "@/hooks/useTags";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useEvidence } from "@/hooks/useEvidence";
 import { useAuth } from "@/hooks/useAuth";
+import { useProofAnalytics } from "@/hooks/useProofAnalytics";
 import { Tag } from "@/types/tags";
 import ReviewContent from "@/components/ReviewContent";
 import {
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   ArrowLeft, Building2, Calendar, Mail, Briefcase, Star,
-  Edit, Trash2, Archive, Loader2, FileText, ExternalLink, Globe,
+  Edit, Trash2, Archive, Loader2, FileText, ExternalLink, Globe, Eye, Copy,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -39,9 +40,13 @@ export default function ProofDetail() {
   const { deleteEvidence, archiveEvidence, updateEvidence } = useEvidence();
   const { tags: allTags } = useTags();
 
+  const { stats, track } = useProofAnalytics(id);
+
+  // Track view on mount
   const { data: proof, isLoading } = useQuery({
     queryKey: ["proof", id],
     queryFn: async () => {
+      track.mutate({ eventType: "view" });
       const { data, error } = await supabase
         .from("evidence")
         .select("*, evidence_tags(tag_id)")
@@ -144,8 +149,15 @@ export default function ProofDetail() {
               </Card>
             )}
 
+            {/* Analytics */}
+            <div className="flex items-center gap-4 text-sm text-muted-foreground px-1">
+              <span className="flex items-center gap-1.5"><Eye className="h-4 w-4" />{stats.views} views</span>
+              <span className="flex items-center gap-1.5"><Copy className="h-4 w-4" />{stats.copies} copies</span>
+            </div>
+
             {/* Format Studio */}
             <FormatStudio
+              evidenceId={id}
               customerName={proof.customer_name}
               jobTitle={proof.job_title ?? undefined}
               company={proof.company}

@@ -5,8 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Copy, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useProofAnalytics } from "@/hooks/useProofAnalytics";
 
 interface FormatStudioProps {
+  evidenceId?: string;
   customerName: string;
   jobTitle?: string;
   company: string;
@@ -18,22 +20,6 @@ interface FormatStudioProps {
   rating?: number;
   title: string;
 }
-
-const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast.success("Copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2 shrink-0">
-      {copied ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
-      {copied ? "Copied" : "Copy"}
-    </Button>
-  );
-};
 
 const FormatBlock = ({ text }: { text: string }) => (
   <div className="relative">
@@ -47,6 +33,7 @@ const FormatBlock = ({ text }: { text: string }) => (
 );
 
 export const FormatStudio = ({
+  evidenceId,
   customerName,
   jobTitle,
   company,
@@ -58,6 +45,17 @@ export const FormatStudio = ({
   rating,
   title,
 }: FormatStudioProps) => {
+  const { track } = useProofAnalytics(evidenceId);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (text: string, formatId: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(formatId);
+    toast.success("Copied to clipboard");
+    track.mutate({ eventType: "copy", format: formatId });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   const attribution = jobTitle
     ? `— ${customerName}, ${jobTitle} at ${company}`
     : `— ${customerName}, ${company}`;
@@ -66,20 +64,15 @@ export const FormatStudio = ({
     ? `${customerName}, ${jobTitle} @ ${company}`
     : `${customerName} @ ${company}`;
 
-  // Trim content to first 2-3 sentences for pull quote
   const sentences = content.match(/[^.!?]+[.!?]+/g) ?? [content];
   const pullQuoteContent = sentences.slice(0, 2).join(" ").trim();
 
-  const stars = rating ? "⭐".repeat(rating) : "";
+  const stars = rating ? "⭐".repeat(Math.round(rating)) : "";
 
   const pullQuote = `"${pullQuoteContent}"\n\n${attribution}`;
-
   const emailSnippet = `Here's what ${customerName} from ${company} had to say:\n\n"${content}"\n\n${attribution}${industry ? `\nIndustry: ${industry}` : ""}${companySize ? ` · ${companySize}` : ""}`;
-
   const landingPageHero = `${stars ? `${stars}\n\n` : ""}"${content}"\n\n${customerName}\n${jobTitle ? `${jobTitle}, ` : ""}${company}${industry ? ` · ${industry}` : ""}`;
-
   const socialPost = `"${pullQuoteContent}"\n\n${shortAttribution}${industry ? ` · ${industry}` : ""}\n\n${results ? `Key result: ${results}\n\n` : ""}#CustomerStory #SocialProof`;
-
   const caseStudy = [
     `## ${title}`,
     "",
@@ -127,7 +120,17 @@ export const FormatStudio = ({
           <TabsContent key={f.id} value={f.id}>
             <div className="flex items-start justify-between gap-3 mb-2">
               <p className="text-xs text-muted-foreground">{f.hint}</p>
-              <CopyButton text={f.text} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleCopy(f.text, f.id)}
+                className="gap-2 shrink-0"
+              >
+                {copiedId === f.id
+                  ? <><Check className="h-3.5 w-3.5 text-success" />Copied</>
+                  : <><Copy className="h-3.5 w-3.5" />Copy</>
+                }
+              </Button>
             </div>
             <FormatBlock text={f.text} />
           </TabsContent>

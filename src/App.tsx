@@ -10,6 +10,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Library from "./pages/Library";
 import ProofDetail from "./pages/ProofDetail";
 import Coverage from "./pages/Coverage";
+import Collect from "./pages/Collect";
 
 // Existing pages (kept for backward compat)
 import Index from "./pages/Index";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
             <Route path="/library/:id" element={<ProtectedRoute><ProofDetail /></ProtectedRoute>} />
             <Route path="/coverage" element={<ProtectedRoute><Coverage /></ProtectedRoute>} />
+            <Route path="/collect" element={<ProtectedRoute><Collect /></ProtectedRoute>} />
 
             {/* Existing routes (kept for backward compat) */}
             <Route path="/submit" element={<ProtectedRoute><Submit /></ProtectedRoute>} />

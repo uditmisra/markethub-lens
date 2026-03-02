@@ -8,15 +8,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { FileUpload } from "@/components/FileUpload";
 import { useEvidence } from "@/hooks/useEvidence";
+import { useCampaigns } from "@/hooks/useCampaigns";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { EvidenceType, ProductType } from "@/types/evidence";
 import { ArrowLeft, ArrowRight, CheckCircle, MessageSquare, Send } from "lucide-react";
 
 const TOTAL_STEPS = 4;
 
 const Submit = () => {
+  const [searchParams] = useSearchParams();
+  const campaignId = searchParams.get("campaign");
   const { createEvidence } = useEvidence();
+  const { campaigns } = useCampaigns();
+  const campaign = campaigns.find((c) => c.id === campaignId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
@@ -38,7 +43,7 @@ const Submit = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    createEvidence.mutate(formData, {
+    createEvidence.mutate({ ...formData, campaignId: campaignId ?? undefined } as any, {
       onSuccess: () => {
         setSubmitted(true);
       },
@@ -115,7 +120,7 @@ const Submit = () => {
             </div>
             <h1 className="text-4xl font-bold mb-2 text-foreground">Share Your Feedback</h1>
             <p className="text-muted-foreground">
-              Tell us about your experience — it only takes a couple of minutes.
+              {campaign?.message ?? "Tell us about your experience — it only takes a couple of minutes."}
             </p>
           </div>
 
