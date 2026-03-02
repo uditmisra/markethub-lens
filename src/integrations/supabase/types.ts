@@ -155,6 +155,63 @@ export type Database = {
         }
         Relationships: []
       }
+      evidence_tags: {
+        Row: {
+          evidence_id: string
+          tag_id: string
+          created_at: string
+        }
+        Insert: {
+          evidence_id: string
+          tag_id: string
+          created_at?: string
+        }
+        Update: {
+          evidence_id?: string
+          tag_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_tags_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      tags: {
+        Row: {
+          id: string
+          name: string
+          category: string
+          color: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          category: string
+          color?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          category?: string
+          color?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

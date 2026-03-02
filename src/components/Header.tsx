@@ -9,9 +9,12 @@ export const Header = () => {
   const location = useLocation();
   const { canApprove, isAdmin } = useUserRole();
   const { pendingCount } = useEvidence();
-  
-  const isActive = (path: string) => location.pathname === path;
-  
+
+  const isActive = (path: string) =>
+    path === "/library"
+      ? location.pathname.startsWith("/library")
+      : location.pathname === path;
+
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -21,32 +24,20 @@ export const Header = () => {
           </div>
           <span className="text-xl font-bold text-foreground">WallOfLove</span>
         </Link>
-        
+
         <nav className="flex items-center gap-1">
-          <Button
-            variant={isActive("/") ? "secondary" : "ghost"}
-            asChild
-          >
-            <Link to="/">Home</Link>
+          <Button variant={isActive("/library") ? "secondary" : "ghost"} asChild>
+            <Link to="/library">Library</Link>
           </Button>
-          <Button
-            variant={isActive("/testimonials") ? "secondary" : "ghost"}
-            asChild
-          >
+
+          <Button variant={isActive("/testimonials") ? "secondary" : "ghost"} asChild>
             <Link to="/testimonials">Wall of Love</Link>
           </Button>
-          <Button
-            variant={isActive("/submit") ? "secondary" : "ghost"}
-            asChild
-          >
-            <Link to="/submit">Share Feedback</Link>
+
+          <Button variant={isActive("/coverage") ? "secondary" : "ghost"} asChild>
+            <Link to="/coverage">Coverage</Link>
           </Button>
-          <Button
-            variant={isActive("/dashboard") ? "secondary" : "ghost"}
-            asChild
-          >
-            <Link to="/dashboard">Testimonial Library</Link>
-          </Button>
+
           {canApprove && (
             <Button
               variant={isActive("/admin/review") ? "secondary" : "ghost"}
@@ -54,10 +45,10 @@ export const Header = () => {
               className="relative"
             >
               <Link to="/admin/review">
-                Pending Review
+                Review
                 {pendingCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
+                  <Badge
+                    variant="destructive"
                     className="ml-2 h-5 min-w-5 px-1.5 rounded-full text-xs"
                   >
                     {pendingCount}
@@ -66,24 +57,16 @@ export const Header = () => {
               </Link>
             </Button>
           )}
+
           {isAdmin && (
             <>
-              <Button
-                variant={isActive("/admin") ? "secondary" : "ghost"}
-                asChild
-              >
+              <Button variant={isActive("/admin") ? "secondary" : "ghost"} asChild>
                 <Link to="/admin">Admin</Link>
               </Button>
-              <Button
-                variant={isActive("/integrations") ? "secondary" : "ghost"}
-                asChild
-              >
-                <Link to="/integrations">Connections</Link>
+              <Button variant={isActive("/integrations") ? "secondary" : "ghost"} asChild>
+                <Link to="/integrations">Sources</Link>
               </Button>
-              <Button
-                variant={isActive("/widgets") ? "secondary" : "ghost"}
-                asChild
-              >
+              <Button variant={isActive("/widgets") ? "secondary" : "ghost"} asChild>
                 <Link to="/widgets">Embed</Link>
               </Button>
             </>
