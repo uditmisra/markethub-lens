@@ -1,4 +1,4 @@
-project_id = "ecfavbwanepcxogzxaea"
+project_id = "pbtcvovzqhdniltllrbn"
 
 [functions.resolve-g2-product]
 verify_jwt = false

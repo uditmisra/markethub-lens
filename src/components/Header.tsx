@@ -69,6 +69,12 @@ export const Header = () => {
           {isAdmin && (
             <>
               <Button
+                variant={isActive("/admin") ? "secondary" : "ghost"}
+                asChild
+              >
+                <Link to="/admin">Admin</Link>
+              </Button>
+              <Button
                 variant={isActive("/integrations") ? "secondary" : "ghost"}
                 asChild
               >

@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import EvidenceDetail from "./pages/EvidenceDetail";
 import EditEvidence from "./pages/EditEvidence";
 import AdminReview from "./pages/AdminReview";
+import AdminPanel from "./pages/AdminPanel";
 import Integrations from "./pages/Integrations";
 import Testimonials from "./pages/Testimonials";
 import PublicEvidenceDetail from "./pages/PublicEvidenceDetail";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/evidence/:id" element={<ProtectedRoute><EvidenceDetail /></ProtectedRoute>} />
             <Route path="/evidence/:id/edit" element={<ProtectedRoute><EditEvidence /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
             <Route path="/admin/review" element={<ProtectedRoute><AdminReview /></ProtectedRoute>} />
             <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
             <Route path="/widgets" element={<ProtectedRoute><WidgetGenerator /></ProtectedRoute>} />
