@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+const ALLOWED_DOMAIN = import.meta.env.VITE_ALLOWED_DOMAIN as string | undefined;
+
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -18,18 +20,12 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/dashboard");
-      }
+      if (session) navigate("/library");
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/dashboard");
-      }
+      if (session) navigate("/library");
     });
 
     return () => subscription.unsubscribe();
@@ -37,6 +33,19 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (ALLOWED_DOMAIN) {
+      const domain = email.split("@")[1]?.toLowerCase();
+      if (domain !== ALLOWED_DOMAIN.toLowerCase()) {
+        toast({
+          title: "Domain not allowed",
+          description: `Only @${ALLOWED_DOMAIN} email addresses can sign up.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
@@ -47,7 +56,7 @@ const Auth = () => {
           data: {
             full_name: fullName,
           },
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/library`,
         },
       });
 
